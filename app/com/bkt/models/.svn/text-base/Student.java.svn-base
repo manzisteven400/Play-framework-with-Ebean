@@ -1,0 +1,81 @@
+/**
+ * 
+ */
+package com.bkt.models;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+
+import play.data.validation.Constraints.Required;
+import play.db.ebean.Model;
+
+/**
+ * @author pc
+ *
+ */
+@Entity
+public class Student extends Model {
+
+	/**
+	 * Student table
+	 */
+	
+	/**
+	 * Student registration status
+	 */
+	public static enum StudentStatus {ACTIVE, DISABLED,APPLICATION,ADMITTED,OTHER}
+	
+	/**
+	 * Account status: ONGOING,DONE
+	 */
+	public static enum ApplicantStatus {ONGOING,DONE}
+	
+	private static final long serialVersionUID = 1L;
+	@Id
+	@GeneratedValue
+	public Long stdId;
+	
+	@Required
+	public String firstName;
+
+	@Required
+	public String lastName;
+
+	@Required
+	@Column(unique=true)
+	public String regNumber;
+
+	@Required
+	public Long instId;
+
+	@Required
+	@Column(unique=true)
+	public String nida;
+	
+	@Column(unique=true)
+	public String phone;
+	
+	@Column(unique=true)
+	public String email;
+
+	@Required
+	public Long facultyId;
+
+	@Required
+	@Enumerated(EnumType.STRING)
+	public StudentStatus stdStatus;
+
+	@Required
+	@Enumerated(EnumType.STRING)
+	public ApplicantStatus applicantStatus;
+	
+	public String password;
+	public String stdPic;
+
+	public static Finder<Long, Student> find= new Finder<Long, Student>(Long.class,Student.class);
+
+}

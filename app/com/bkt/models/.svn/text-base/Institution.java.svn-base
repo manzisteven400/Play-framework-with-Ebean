@@ -1,0 +1,56 @@
+/**
+ * 
+ */
+package com.bkt.models;
+
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+
+import play.data.validation.Constraints.Required;
+import play.db.ebean.Model;
+
+/**
+ * @author pc
+ *
+ */
+
+@Entity
+public class Institution extends Model {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	@Id
+	@GeneratedValue
+	public Long instId;
+	
+	@Required
+	public String name;
+	public String accronym;
+	public String instLogo;
+	public String address;
+	
+	@Column(unique=true)
+    public String phone;
+	
+	@Column(unique=true)
+    public String email;
+	
+	@Column(unique=true)
+    public String tin;
+	public Date createdDate;
+	
+	@Column(unique=true)
+    public String instCode;
+	public String thirdParty; 
+	
+	public static Finder<Long, Institution> find= new Finder<Long, Institution>(Long.class,Institution.class);
+
+
+}

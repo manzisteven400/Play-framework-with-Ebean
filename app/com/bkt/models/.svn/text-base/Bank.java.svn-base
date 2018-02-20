@@ -1,0 +1,47 @@
+/**
+ * 
+ */
+package com.bkt.models;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+
+import play.data.validation.Constraints.Required;
+import play.db.ebean.Model;
+
+/**
+ * @author pc
+ *
+ */
+@Entity
+public class Bank extends Model {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	@Id
+	@GeneratedValue
+	public Long bankId;
+	
+	@Required
+	@Column(unique=true)
+    public String name;
+	
+	@Required
+	@Column(unique=true)
+    public String accronym;
+	
+	@Required
+	@Column(unique=true)
+    public String bnrCode;
+	
+	@Required
+	public String bankStatus;
+	
+	public static Finder<Long, Bank> find= new Finder<Long, Bank>(Long.class,Bank.class);
+	
+	
+}

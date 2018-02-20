@@ -1,0 +1,399 @@
+/**
+ * 
+ */
+package com.bkt.controllers;
+
+import java.util.List;
+
+import com.avaje.ebean.Page;
+import com.bkt.controllers.auth.AgendaAuthenticator;
+import com.bkt.models.PaymentLog;
+import com.bkt.utils.HelperManager;
+import com.bkt.utils.LogRequest;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import play.data.Form;
+import play.libs.Json;
+import play.mvc.BodyParser;
+import play.mvc.Controller;
+import play.mvc.Result;
+import play.mvc.Security.Authenticated;
+
+/**
+ * @author pc
+ *
+ */
+@LogRequest
+@Authenticated(AgendaAuthenticator.class)
+@com.bkt.utils.CorsComposition.Cors
+public class PaymentLogController extends Controller {
+
+	public static Result listJson() {
+		ObjectNode httpStatus = Json.newObject();
+		
+		List<PaymentLog> all = PaymentLog.find.all();
+
+		if (all.isEmpty()) {
+			ObjectNode pymtLongJson = Json.newObject();
+
+			pymtLongJson.put("status", "No data");
+			
+			httpStatus.put("Code", "401");
+			httpStatus.put("status", "Bad request");
+			httpStatus.put("response", pymtLongJson);
+			
+			return badRequest(httpStatus);
+		} else {
+			ObjectNode pymtLongJson;
+			ObjectMapper mapper = new ObjectMapper();
+			ArrayNode array = mapper.createArrayNode();
+			for (PaymentLog user : all) {
+				pymtLongJson = Json.newObject();
+
+				pymtLongJson.put("accountNumber", user.accountNumber);
+				pymtLongJson.put("amountPaid", user.amountPaid);
+				pymtLongJson.put("extTrxId", user.extTrxId);
+				pymtLongJson.put("instId", user.instId);
+				pymtLongJson.put("intTrxId", user.intTrxId);
+				pymtLongJson.put("paymentChannel", user.paymentChannel);
+				pymtLongJson.put("paymentDevice", user.paymentDevice);
+				pymtLongJson.put("processingNumber", user.processingNumber);
+				pymtLongJson.put("studentId", user.studentId);
+				pymtLongJson.put("paymentDate", user.paymentDate.toString());
+				pymtLongJson.put("postingDate", user.postingDate.toString());
+
+				array.add(pymtLongJson);
+			}
+
+			httpStatus.put("Code", "200");
+			httpStatus.put("status", "Success");
+			httpStatus.put("response", array);
+			
+			return ok(httpStatus);
+		}
+
+	}public static Result allByPaging(Long pageNum, Long pageMax) {
+		ObjectNode httpStatus = Json.newObject();
+		
+		
+		// Paging starts
+		Page<PaymentLog> pagedList = PaymentLog.find.findPagingList(pageMax.intValue())
+				.setFetchAhead(false).getPage(pageNum.intValue());
+
+		// fetch and return the list
+		List<PaymentLog> allPayents = pagedList.getList();
+
+		// get the total row count (from the future)
+		int totalRowCount = pagedList.getTotalRowCount();
+		
+		
+		if (allPayents.isEmpty()) {
+			ObjectNode pymtLongJson = Json.newObject();
+
+			pymtLongJson.put("status", "No data");
+			
+			httpStatus.put("Code", "401");
+			httpStatus.put("status", "Bad request");
+			httpStatus.put("response", pymtLongJson);
+			
+			return badRequest(httpStatus);
+		} else {
+			ObjectNode respJson = Json.newObject();
+
+			respJson.put("rowCount", totalRowCount);
+			
+			ObjectNode pymtLongJson;
+			ObjectMapper mapper = new ObjectMapper();
+			ArrayNode array = mapper.createArrayNode();
+			for (PaymentLog user : allPayents) {
+				
+				pymtLongJson = Json.newObject();
+
+				pymtLongJson.put("accountNumber", user.accountNumber);
+				pymtLongJson.put("amountPaid", user.amountPaid);
+				pymtLongJson.put("extTrxId", user.extTrxId);
+				pymtLongJson.put("instId", user.instId);
+				pymtLongJson.put("intTrxId", user.intTrxId);
+				pymtLongJson.put("paymentChannel", user.paymentChannel);
+				pymtLongJson.put("paymentDevice", user.paymentDevice);
+				pymtLongJson.put("processingNumber", user.processingNumber);
+				pymtLongJson.put("studentId", user.studentId);
+				pymtLongJson.put("paymentDate", user.paymentDate.toString());
+				pymtLongJson.put("postingDate", user.postingDate.toString());
+
+				array.add(pymtLongJson);
+			}
+
+			httpStatus.put("Code", "200");
+			httpStatus.put("status", "Success");
+			httpStatus.put("response", array);
+			
+			return ok(httpStatus);
+		}
+
+	}public static Result allByInstIdPaging(Long instId, Long pageNum, Long pageMax) {
+		ObjectNode httpStatus = Json.newObject();
+		
+		
+		// Paging starts
+		Page<PaymentLog> pagedList = PaymentLog.find.where().eq("inst_id", instId).findPagingList(pageMax.intValue())
+				.setFetchAhead(false).getPage(pageNum.intValue());
+
+		// fetch and return the list
+		List<PaymentLog> allPayents = pagedList.getList();
+
+		// get the total row count (from the future)
+		int totalRowCount = pagedList.getTotalRowCount();
+		
+		
+		if (allPayents.isEmpty()) {
+			ObjectNode pymtLongJson = Json.newObject();
+
+			pymtLongJson.put("status", "No data");
+
+			httpStatus.put("Code", "401");
+			httpStatus.put("status", "Bad request");
+			httpStatus.put("response", pymtLongJson);
+			
+			return badRequest(httpStatus);
+		} else {
+			ObjectNode respJson = Json.newObject();
+
+			respJson.put("rowCount", totalRowCount);
+			
+			ObjectNode pymtLongJson;
+			ObjectMapper mapper = new ObjectMapper();
+			ArrayNode array = mapper.createArrayNode();
+			for (PaymentLog user : allPayents) {
+				
+				pymtLongJson = Json.newObject();
+
+				pymtLongJson.put("accountNumber", user.accountNumber);
+				pymtLongJson.put("amountPaid", user.amountPaid);
+				pymtLongJson.put("extTrxId", user.extTrxId);
+				pymtLongJson.put("instId", user.instId);
+				pymtLongJson.put("intTrxId", user.intTrxId);
+				pymtLongJson.put("paymentChannel", user.paymentChannel);
+				pymtLongJson.put("paymentDevice", user.paymentDevice);
+				pymtLongJson.put("processingNumber", user.processingNumber);
+				pymtLongJson.put("studentId", user.studentId);
+				pymtLongJson.put("paymentDate", user.paymentDate.toString());
+				pymtLongJson.put("postingDate", user.postingDate.toString());
+
+				array.add(pymtLongJson);
+			}
+
+			httpStatus.put("Code", "200");
+			httpStatus.put("status", "Success");
+			httpStatus.put("response", array);
+			
+			return ok(httpStatus);
+		}
+
+	}
+
+	public static Result showJson(Long id) {
+		ObjectNode httpStatus = Json.newObject();
+		
+		PaymentLog user = PaymentLog.find.byId(id);
+		if (user.paymentId > 0) {
+			ObjectNode pymtLongJson = Json.newObject();
+
+			pymtLongJson.put("accountNumber", user.accountNumber);
+			pymtLongJson.put("amountPaid", user.amountPaid);
+			pymtLongJson.put("extTrxId", user.extTrxId);
+			pymtLongJson.put("instId", user.instId);
+			pymtLongJson.put("intTrxId", user.intTrxId);
+			pymtLongJson.put("paymentChannel", user.paymentChannel);
+			pymtLongJson.put("paymentDevice", user.paymentDevice);
+			pymtLongJson.put("processingNumber", user.processingNumber);
+			pymtLongJson.put("studentId", user.studentId);
+			pymtLongJson.put("paymentDate", user.paymentDate.toString());
+			pymtLongJson.put("postingDate", user.postingDate.toString());
+
+
+			httpStatus.put("Code", "200");
+			httpStatus.put("status", "Success");
+			httpStatus.put("response", pymtLongJson);
+			
+			return ok(httpStatus);
+		} else {
+			ObjectNode pymtLongJson = Json.newObject();
+
+			pymtLongJson.put("status", "No data");
+
+			httpStatus.put("Code", "401");
+			httpStatus.put("status", "Bad request");
+			httpStatus.put("response", pymtLongJson);
+			
+			return badRequest(httpStatus);
+		}
+
+	}
+
+	@BodyParser.Of(BodyParser.Json.class)
+	public static Result createPaymentLongJson() {
+		ObjectNode httpStatus = Json.newObject();
+		
+		JsonNode asJson = request().body().asJson();
+
+		if (asJson.isNull()) {
+			ObjectNode pymtLongJson = Json.newObject();
+			pymtLongJson.put("status", "No data");
+
+			httpStatus.put("Code", "401");
+			httpStatus.put("status", "Bad request");
+			httpStatus.put("response", pymtLongJson);
+			
+			return badRequest(httpStatus);
+		} else {
+			Form<PaymentLog> contactForm = Form.form(PaymentLog.class).bind(asJson);
+			if (contactForm.hasErrors()) {
+
+				httpStatus.put("Code", "401");
+				httpStatus.put("status", "Bad request");
+				httpStatus.put("response", contactForm.errorsAsJson());
+				
+				return badRequest(httpStatus);
+			} else {
+				ObjectNode pymtLongJson = Json.newObject();
+				PaymentLog pymtLong = new PaymentLog();
+
+				pymtLong.accountNumber = asJson.findPath("accountNumber").textValue();
+				pymtLong.amountPaid = asJson.findPath("amountPaid").doubleValue();
+				pymtLong.extTrxId = asJson.findPath("extTrxId").textValue();
+				pymtLong.instId = asJson.findPath("instId").longValue();
+				pymtLong.paymentChannel = asJson.findPath("paymentChannel").textValue();
+				pymtLong.paymentDevice = asJson.findPath("paymentDevice").textValue();
+				pymtLong.processingNumber = asJson.findPath("processingNumber").textValue();
+				pymtLong.studentId = asJson.findPath("studentId").longValue();
+				pymtLong.paymentDate = HelperManager.getDateFromString(asJson.findPath("paymentDate").textValue());
+				pymtLong.postingDate = HelperManager.getDateFromString(asJson.findPath("postingDate").textValue());
+
+				// save the user account
+				try {
+					pymtLong.save();
+
+					pymtLongJson.put("status", "saved");
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					pymtLongJson.put("status", e.getMessage());
+				}
+
+				httpStatus.put("Code", "200");
+				httpStatus.put("status", "Success");
+				httpStatus.put("response", pymtLongJson);
+				
+				return ok(httpStatus);
+			}
+		}
+
+	}
+
+	@BodyParser.Of(BodyParser.Json.class)
+	public static Result updatePaymentLongJson() {
+		ObjectNode httpStatus = Json.newObject();
+		
+		JsonNode asJson = request().body().asJson();
+
+		if (asJson.isNull()) {
+			ObjectNode pymtLongJson = Json.newObject();
+			pymtLongJson.put("status", "No data");
+
+			httpStatus.put("Code", "401");
+			httpStatus.put("status", "Bad request");
+			httpStatus.put("response", pymtLongJson);
+			
+			return badRequest(httpStatus);
+		} else {
+			Form<PaymentLog> contactForm = Form.form(PaymentLog.class).bind(asJson);
+			if (contactForm.hasErrors()) {
+
+				httpStatus.put("Code", "401");
+				httpStatus.put("status", "Bad request");
+				httpStatus.put("response", contactForm.errorsAsJson());
+				
+				return badRequest(httpStatus);
+			} else {
+				ObjectNode pymtLongJson = Json.newObject();
+
+				PaymentLog pymtLong = PaymentLog.find.byId(asJson.findPath("paymentId").longValue());
+
+				pymtLong.accountNumber = asJson.findPath("accountNumber").textValue();
+				pymtLong.amountPaid = asJson.findPath("amountPaid").doubleValue();
+				pymtLong.extTrxId = asJson.findPath("extTrxId").textValue();
+				pymtLong.instId = asJson.findPath("instId").longValue();
+				pymtLong.paymentChannel = asJson.findPath("paymentChannel").textValue();
+				pymtLong.paymentDevice = asJson.findPath("paymentDevice").textValue();
+				pymtLong.processingNumber = asJson.findPath("processingNumber").textValue();
+				pymtLong.studentId = asJson.findPath("studentId").longValue();
+				pymtLong.paymentDate = HelperManager.getDateFromString(asJson.findPath("paymentDate").textValue());
+				pymtLong.postingDate = HelperManager.getDateFromString(asJson.findPath("postingDate").textValue());
+
+				// save the user account
+				try {
+					pymtLong.update();
+
+					pymtLongJson.put("status", "updated");
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+
+					pymtLongJson.put("status", e.getMessage());
+				}
+
+				httpStatus.put("Code", "200");
+				httpStatus.put("status", "Success");
+				httpStatus.put("response", pymtLongJson);
+				
+				return ok(httpStatus);
+			}
+		}
+
+	}
+
+	@BodyParser.Of(BodyParser.Json.class)
+	public static Result deletePaymentLongJson() {
+		ObjectNode httpStatus = Json.newObject();
+		
+		JsonNode asJson = request().body().asJson();
+
+		if (asJson.isNull()) {
+			ObjectNode pymtLongJson = Json.newObject();
+			pymtLongJson.put("status", "No data");
+
+			httpStatus.put("Code", "401");
+			httpStatus.put("status", "Bad request");
+			httpStatus.put("response", pymtLongJson);
+			
+			return badRequest(httpStatus);
+		} else {
+			ObjectNode pymtLongJson = Json.newObject();
+
+			PaymentLog pymtLong = PaymentLog.find.byId(asJson.findPath("paymentId").longValue());
+			// save the user account
+			try {
+				pymtLong.delete();
+
+				pymtLongJson.put("status", "updated");
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+
+				pymtLongJson.put("status", e.getMessage());
+			}
+			
+			httpStatus.put("Code", "200");
+			httpStatus.put("status", "Success");
+			httpStatus.put("response", pymtLongJson);
+			
+			return ok(httpStatus);
+		}
+
+	}
+
+}

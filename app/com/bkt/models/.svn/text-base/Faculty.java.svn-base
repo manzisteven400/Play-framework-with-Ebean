@@ -1,0 +1,41 @@
+/**
+ * 
+ */
+package com.bkt.models;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+
+import play.data.validation.Constraints.Required;
+import play.db.ebean.Model;
+
+/**
+ * @author pc
+ *
+ */
+@Entity
+public class Faculty extends Model {
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	@Id
+	@GeneratedValue
+	public Long facultyId;
+
+	@Required
+	public Long instId;
+
+	@Required
+	public String name;
+	
+	public String accronym;
+	
+	@Required
+	public String code;
+
+	public static Finder<Long, Faculty> find= new Finder<Long, Faculty>(Long.class,Faculty.class);
+
+}

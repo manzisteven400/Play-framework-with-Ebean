@@ -1,0 +1,58 @@
+/**
+ * 
+ */
+package com.bkt.models;
+
+import java.util.Date;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+
+import play.data.validation.Constraints.Required;
+import play.db.ebean.Model;
+
+/**
+ * @author pc
+ *
+ */
+@Entity
+public class PaymentLog extends Model {
+
+	private static final long serialVersionUID = 1L;
+	@Id
+	@GeneratedValue
+	public Long paymentId;
+	
+	@Required
+	public Long studentId;
+
+	@Required
+	public Long instId;
+
+	@Required
+	public String accountNumber;
+
+	@Required
+	public String extTrxId;
+
+	@Required
+	public String intTrxId;
+
+	@Required
+	public String paymentChannel;
+
+	public String paymentDevice;
+	public String processingNumber;
+
+	@Required
+	public double amountPaid;
+
+	@Required
+	public Date paymentDate;
+	
+	public Date postingDate;
+	
+	public static Finder<Long, PaymentLog> find=new Finder<Long,PaymentLog>(Long.class, PaymentLog.class);
+	
+}

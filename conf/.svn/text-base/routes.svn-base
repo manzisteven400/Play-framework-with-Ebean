@@ -1,0 +1,119 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Home page
+GET     /                           com.bkt.controllers.Application.index()
+
+
+# Student profile
+GET      /students                           com.bkt.controllers.StudentController.listJson()
+GET      /students/institute/:instId            com.bkt.controllers.StudentController.allStudentsByInstId(instId:Long)
+GET      /students/institute/faculty/:instId/:facultyId  com.bkt.controllers.StudentController.allStudentsByInstIdAndFacultyId(instId:Long,facultyId:Long)
+GET      /students/:id                           com.bkt.controllers.StudentController.showJson(id:Long)
+GET      /students/paging/:startNum/:endNum      com.bkt.controllers.StudentController.allStudentsPaging(startNum:Long,endNum:Long)
+GET      /students/institute/paging/:instId/:startNum/:endNum            com.bkt.controllers.StudentController.allStudentsByInstiPaging(instId:Long,startNum:Long,endNum:Long)
+GET      /students/institute/faculty/paging/:facultyId/:startNum/:endNum  com.bkt.controllers.StudentController.allStudentsByInstIdAndFacultyIdPaging(instId:Long,facultyId:Long, startNum:Long,endNum:Long)
+POST     /createStudent                          com.bkt.controllers.StudentController.createStudentJson()
+POST     /deleteStudent                           com.bkt.controllers.StudentController.deleteStudentJson()
+POST     /updateStudent                           com.bkt.controllers.StudentController.updateStudentJson()
+
+# Institution profile
+GET      /institutions                           com.bkt.controllers.InstitutionController.listJson()
+GET      /institutions/:id                           com.bkt.controllers.InstitutionController.showJson(id:Long)
+GET      /institutions/paging/:startNum/:endNum      com.bkt.controllers.InstitutionController.allByPaging(startNum:Long,endNum:Long)
+# GET      /newInstitutionJson                           com.bkt.controllers.InstitutionController.index()
+POST     /createInstitutionJson                         com.bkt.controllers.InstitutionController.createInstitutionJson()
+POST     /deleteInstitution                           com.bkt.controllers.InstitutionController.deleteInstitutionJson()
+POST     /updateInstitution                           com.bkt.controllers.InstitutionController.updateInstitutionJson()
+
+# bank profile
+GET      /banks                           com.bkt.controllers.BankController.listJson()
+GET      /banks/:id                           com.bkt.controllers.BankController.showJson(id :Long)
+#GET      /banks/bank/:bnrCode                           com.bkt.controllers.BankController.showByCodeJson(bnrCode :String)
+# GET      /newBankJson                           com.bkt.controllers.BankController.createBankJson()
+POST     /createBank                         com.bkt.controllers.BankController.createBankJson()
+POST     /deleteBank                           com.bkt.controllers.BankController.deleteBankJson()
+POST     /updateBank                           com.bkt.controllers.BankController.updateBankJson()
+
+# bank accounts
+GET      /bankAccs                           com.bkt.controllers.BankAccountController.listJson()
+GET      /bankAccs/:id                           com.bkt.controllers.BankAccountController.showJson(id :Long)
+GET      /bankAccs/paging/:startNum/:endNum      com.bkt.controllers.BankAccountController.allByPaging(startNum:Long,endNum:Long)
+GET      /bankAccs/institute/paging/:instId/:startNum/:endNum      com.bkt.controllers.BankAccountController.allByInstIdPaging(instId:Long, startNum:Long,endNum:Long)
+#GET      /bankAccs/institute/:id                           com.bkt.controllers.BankAccountController.showJson(id :Long)
+#GET      /bankAccs/institute/bank/:instId/:bankId           com.bkt.controllers.BankAccountController.showJson(id :Long)
+POST     /createBankAcc                         com.bkt.controllers.BankAccountController.createBankAccountJson()
+POST     /deleteBankAcc                           com.bkt.controllers.BankAccountController.deleteBankAccountJson()
+POST     /updateBankAcc                           com.bkt.controllers.BankAccountController.updateBankAccountJson()
+
+# Faculty entry
+GET      /faculties                           com.bkt.controllers.FacultyController.listJson()
+GET      /faculties/:id                           com.bkt.controllers.FacultyController.showJson(id :Long)
+GET      /faculties/paging/:startNum/:endNum      com.bkt.controllers.FacultyController.allByPaging(startNum:Long,endNum:Long)
+GET      /faculties/institute/paging/:instId/:startNum/:endNum      com.bkt.controllers.FacultyController.allByInstIdPaging(instId:Long, startNum:Long,endNum:Long)
+# GET     /newFaculty                           com.bkt.controllers.FacultyController.index()
+POST     /createFaculty                         com.bkt.controllers.FacultyController.createFacultyJson()
+POST     /deleteFaculty                           com.bkt.controllers.FacultyController.deleteFacultyJson()
+POST     /updateFaculty                           com.bkt.controllers.FacultyController.updateFacultyJson()
+
+# Payment purpose
+GET      /pymtPurposes                           com.bkt.controllers.PaymentPurposeController.listJson()
+GET      /pymtPurposes/:id                           com.bkt.controllers.PaymentPurposeController.showJson(id:Long)
+GET      /pymtPurposes/institution/:instId                           com.bkt.controllers.PaymentPurposeController.listByInstitutionJson(instId:Long)
+# GET      /newPymtPurpose                           com.bkt.controllers.PaymentPurposeController.index()
+POST     /createPymtPurpose                         com.bkt.controllers.PaymentPurposeController.createPaymentPurposeJson()
+POST     /deletePymtPurpose                           com.bkt.controllers.PaymentPurposeController.deletePaymentPurposeJson()
+POST     /updatePymtPurpose                           com.bkt.controllers.PaymentPurposeController.updatePaymentPurposeJson()
+
+# Payment Log
+GET      /paymentLogs                           com.bkt.controllers.PaymentLogController.listJson()
+GET      /paymentLogs/:id                           com.bkt.controllers.PaymentLogController.showJson(id :Long)
+GET      /paymentLogs/paging/:startNum/:endNum      com.bkt.controllers.PaymentLogController.allByPaging(startNum:Long,endNum:Long)
+GET      /paymentLogs/institute/paging/:instId/:startNum/:endNum      com.bkt.controllers.PaymentLogController.allByInstIdPaging(instId:Long, startNum:Long,endNum:Long)
+# GET      /newPaymentLog                           com.bkt.controllers.PaymentLogController.index()
+POST     /createPaymentLog                         com.bkt.controllers.PaymentLogController.createPaymentLongJson()
+POST     /deletePaymentLog                           com.bkt.controllers.PaymentLogController.deletePaymentLongJson()
+POST     /updatePaymentLog                           com.bkt.controllers.PaymentLogController.updatePaymentLongJson()
+
+# User accounts
+GET      /userAccounts                          com.bkt.controllers.UserController.listJson()
+GET      /userAccounts/:id                      com.bkt.controllers.UserController.showJson(id :Long)
+GET      /userAccounts/paging/:startNum/:endNum      com.bkt.controllers.UserController.allByPaging(startNum:Long,endNum:Long)
+GET      /userAccounts/institute/paging/:instId/:startNum/:endNum      com.bkt.controllers.UserController.allByInstIdPaging(instId:Long, startNum:Long,endNum:Long)
+GET      /userAccounts/userProfile/paging/:groupId/:startNum/:endNum      com.bkt.controllers.UserController.allByGroupIdPaging(groupId:Long, startNum:Long,endNum:Long)
+# GET      /newUserAccount                        com.bkt.controllers.UserController.index()
+POST     /createUserAccount                     com.bkt.controllers.UserController.createUserJson()
+POST     /deleteUserAccount                     com.bkt.controllers.UserController.updateUserJson()
+POST     /updateUserAccount                     com.bkt.controllers.UserController.deleteUserJson()
+POST    /userAccounts/login					    com.bkt.controllers.UserController.userCredentials()
+
+# User profiles
+GET      /profiles                          com.bkt.controllers.UserProfileController.listJson()
+GET      /profiles/:id                      com.bkt.controllers.UserProfileController.showJson(id :Long)
+# GET      /newProfile                        com.bkt.controllers.UserProfileController.index()
+POST     /createProfile                     com.bkt.controllers.UserProfileController.createProfileJson()
+POST     /deleteProfile                     com.bkt.controllers.UserProfileController.deleteProfileJson()
+POST     /updateProfile                     com.bkt.controllers.UserProfileController.updateProfileJson()
+
+# User Privilege
+GET      /privileges                          com.bkt.controllers.UserPrivilegeController.listJson()
+GET      /privileges/:id                      com.bkt.controllers.UserPrivilegeController.showJson(id :Long)
+# GET      /newPrivilege                        com.bkt.controllers.UserPrivilegeController.index()
+POST     /createPrivilege                     com.bkt.controllers.UserPrivilegeController.createPrivilegeJson()
+POST     /updatePrivilege                    com.bkt.controllers.UserPrivilegeController.updatePrivilegeJson()
+POST     /deletePrivilege                     com.bkt.controllers.UserPrivilegeController.deletePrivilegeJson()
+
+# ProfilePrivilege Mapping
+GET      /assignedPrivileges                          com.bkt.controllers.ProfilePrivilegeController.listJson()
+GET      /assignedPrivileges/:id                      com.bkt.controllers.ProfilePrivilegeController.showJson(id :Long)
+# GET      /newAssignPrivileges                        com.bkt.controllers.ProfilePrivilegeController.index()
+POST     /assignePrivileges                     com.bkt.controllers.ProfilePrivilegeController.assignPrivilegeJson()
+POST     /removeAssignedPrivileges                     com.bkt.controllers.ProfilePrivilegeController.deleteAssignPrivilegeJson()
+POST     /updateAssignedPrivileges                     com.bkt.controllers.ProfilePrivilegeController.updateAssignedPrivilegeJson()
+GET    /assignedPrivileges/profiles/:profileId     com.bkt.controllers.ProfilePrivilegeController.listUserPrivileges(profileId:Long)
+
+OPTIONS  /*all      com.bkt.controllers.Application.preflight(all)
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file               controllers.Assets.at(path="/public", file)

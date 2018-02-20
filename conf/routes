@@ -1,0 +1,268 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Home page
+GET     /                           com.bkt.controllers.Application.index()
+
+# Student profile
+GET      /students                           com.bkt.controllers.StudentController.listJson()
+GET      /students/searchall/:keyword                           com.bkt.controllers.StudentController.searchAll(keyword :String)
+GET      /students/searchall/institute/:instId/:keyword                           com.bkt.controllers.StudentController.searchAllByInsist(instId :Long,keyword :String)
+GET      /students/institute/:instId            com.bkt.controllers.StudentController.allStudentsByInstId(instId:Long)
+GET      /students/institute/faculty/:instId/:facultyId  com.bkt.controllers.StudentController.allStudentsByInstIdAndFacultyId(instId:Long,facultyId:Long)
+GET      /students/:id                           com.bkt.controllers.StudentController.showJson(id:Long)
+GET      /students/regnumber/:regNumber                           com.bkt.controllers.StudentController.showByRegNumber(regNumber:String)
+GET      /students/bankRequest/:regNumber                           com.bkt.controllers.StudentController.showByRegNumberBank(regNumber:String)
+GET      /students/paging/:startNum/:endNum      com.bkt.controllers.StudentController.allStudentsPaging(startNum:Long,endNum:Long)
+GET      /students/institute/paging/:instId/:startNum/:endNum            com.bkt.controllers.StudentController.allStudentsByInstiPaging(instId:Long,startNum:Long,endNum:Long)
+GET      /students/institute/faculty/paging/:instId/:facultyId/:startNum/:endNum  com.bkt.controllers.StudentController.allStudentsByInstIdAndFacultyIdPaging(instId:Long,facultyId:Long, startNum:Long,endNum:Long)
+POST     /createStudent                          com.bkt.controllers.StudentController.createStudentJson()
+POST     /bulkStudentRegistration                          com.bkt.controllers.StudentController.bulkStudentRegistrationJson()
+POST     /deleteStudent                           com.bkt.controllers.StudentController.deleteStudentJson()
+POST     /updateStudent                           com.bkt.controllers.StudentController.updateStudentJson()
+
+# Institution profile
+GET      /institutions                           com.bkt.controllers.InstitutionController.listJson()
+GET      /institutions/:id                           com.bkt.controllers.InstitutionController.showJson(id:Long)
+GET      /institutions/paging/:startNum/:endNum      com.bkt.controllers.InstitutionController.allByPaging(startNum:Long,endNum:Long)
+# GET      /newInstitutionJson                           com.bkt.controllers.InstitutionController.index()
+POST     /createInstitutionJson                         com.bkt.controllers.InstitutionController.createInstitutionJson()
+POST     /deleteInstitution                           com.bkt.controllers.InstitutionController.deleteInstitutionJson()
+POST     /updateInstitution                           com.bkt.controllers.InstitutionController.updateInstitutionJson()
+
+# bank profile
+GET      /banks                           com.bkt.controllers.BankController.listJson()
+GET      /banks/:id                           com.bkt.controllers.BankController.showJson(id :Long)
+#GET      /banks/bank/:bnrCode                           com.bkt.controllers.BankController.showByCodeJson(bnrCode :String)
+# GET     /newBankJson                           com.bkt.controllers.BankController.createBankJson()
+POST     /createBank                         com.bkt.controllers.BankController.createBankJson()
+POST     /deleteBank                           com.bkt.controllers.BankController.deleteBankJson()
+POST     /updateBank                           com.bkt.controllers.BankController.updateBankJson()
+
+# bank accounts
+GET      /bankAccs                           com.bkt.controllers.BankAccountController.listJson()
+GET      /bankAccs/:id                           com.bkt.controllers.BankAccountController.showJson(id :Long)
+GET      /bankAccs/paging/:startNum/:endNum      com.bkt.controllers.BankAccountController.allByPaging(startNum:Long,endNum:Long)
+GET      /bankAccs/institute/paging/:instId/:startNum/:endNum      com.bkt.controllers.BankAccountController.allByInstIdPaging(instId:Long, startNum:Long,endNum:Long)
+GET      /bankAccs/institute/:id                           com.bkt.controllers.BankAccountController.listByInstIdJson(id :Long)
+#GET      /bankAccs/institute/bank/:instId/:bankId           com.bkt.controllers.BankAccountController.showJson(id :Long)
+POST     /createBankAcc                         com.bkt.controllers.BankAccountController.createBankAccountJson()
+POST     /deleteBankAcc                           com.bkt.controllers.BankAccountController.deleteBankAccountJson()
+POST     /updateBankAcc                           com.bkt.controllers.BankAccountController.updateBankAccountJson()
+
+# Faculty entry
+GET      /faculties                           com.bkt.controllers.FacultyController.listJson()
+GET      /faculties/:id                           com.bkt.controllers.FacultyController.showJson(id :Long)
+GET      /faculties/institute/:instId      com.bkt.controllers.FacultyController.listAllByInstid(instId:Long)
+GET      /faculties/paging/:startNum/:endNum      com.bkt.controllers.FacultyController.allByPaging(startNum:Long,endNum:Long)
+GET      /faculties/institute/paging/:instId/:startNum/:endNum      com.bkt.controllers.FacultyController.allByInstIdPaging(instId:Long, startNum:Long,endNum:Long)
+
+# GET     /newFaculty                           com.bkt.controllers.FacultyController.index()
+POST     /createFaculty                         com.bkt.controllers.FacultyController.createFacultyJson()
+POST     /deleteFaculty                           com.bkt.controllers.FacultyController.deleteFacultyJson()
+POST     /updateFaculty                           com.bkt.controllers.FacultyController.updateFacultyJson()
+
+# Payment purpose
+GET      /pymtPurposes                           com.bkt.controllers.PaymentPurposeController.listJson()
+GET      /pymtPurposes/:id                           com.bkt.controllers.PaymentPurposeController.showJson(id:Long)
+GET      /pymtPurposes/institution/:instId                           com.bkt.controllers.PaymentPurposeController.listByInstitutionJson(instId:Long)
+
+# GET      /newPymtPurpose                           com.bkt.controllers.PaymentPurposeController.index()
+POST     /createPymtPurpose                         com.bkt.controllers.PaymentPurposeController.createPaymentPurposeJson()
+POST     /deletePymtPurpose                           com.bkt.controllers.PaymentPurposeController.deletePaymentPurposeJson()
+POST     /updatePymtPurpose                           com.bkt.controllers.PaymentPurposeController.updatePaymentPurposeJson()
+
+# Payment Log from registered students
+GET      /paymentlogs                           com.bkt.controllers.PaymentLogController.listJson()
+GET      /paymentlogs/institute/:instId                           com.bkt.controllers.PaymentLogController.listAllByInstIdJson(instId:Long)
+GET      /paymentlogs/:id                           com.bkt.controllers.PaymentLogController.showJson(id :Long)
+GET      /paymentlogs/searchall/:keyword                           com.bkt.controllers.PaymentLogController.searchAll(keyword :String)
+GET      /paymentlogs/searchByRegNumberAndYear/:instId/:regNumber/:year                           com.bkt.controllers.PaymentLogController.searchAllByInstIdYearAndRegNumber(instId:Long,regNumber :String,year:String)
+GET      /paymentlogs/searchByInstIdAndYearPaging/:instId/:year/:startNum/:endNum                 com.bkt.controllers.PaymentLogController.allByInstIdAndYearPaging(instId:Long,year:String, startNum:Long,endNum:Long)
+GET      /paymentlogs/searcByInstIdAndYearAndFacultyIdPaging/:instId/:year/:facultyId/:startNum/:endNum                 com.bkt.controllers.PaymentLogController.allByInstIdAndYearAndFacultyIdPaging(instId:Long,year:String,facultyId:Long,startNum:Long,endNum:Long)
+GET      /paymentlogs/searchByInstIdAndYearAndRegNumberPaging/:instId/:year/:regNumber/:startNum/:endNum                 com.bkt.controllers.PaymentLogController.allByInstIdAndYearAndRegNumberPaging(instId:Long,year:String,regNumber:String,startNum:Long,endNum:Long)
+GET      /paymentlogs/searchall/institute/:instId/:keyword          com.bkt.controllers.PaymentLogController.searchAllByInsist(instId :Long,keyword :String)
+GET      /paymentLogs/paging/:startNum/:endNum      com.bkt.controllers.PaymentLogController.allByPaging(startNum:Long,endNum:Long)
+GET      /paymentLogs/institute/paging/:instId/:startNum/:endNum      com.bkt.controllers.PaymentLogController.allByInstIdPaging(instId:Long, startNum:Long,endNum:Long)
+POST     /registeredCreatePaymentLog                         com.bkt.controllers.PaymentLogController.createPaymentRegisteredStudentJson()
+POST     /deletePaymentLog                           com.bkt.controllers.PaymentLogController.deletePaymentLongJson()
+POST     /updatePaymentLog                           com.bkt.controllers.PaymentLogController.updatePaymentLongJson()
+
+# Payment Log from registered students  
+GET      /paymentlogs/noneregistered/searchByInstIdAndYearPaging/:instId/:year/:startNum/:endNum                 com.bkt.controllers.PaymentLogController.allNoneRegisteredByInstIdAndYearPaging(instId:Long,year:String, startNum:Long,endNum:Long)
+GET      /payments/allfromunregistered/institute/:instId                           com.bkt.controllers.PaymentLogController.searchAllUnRegisteredByInsistId(instId :Long)
+GET      /singlePaymentlogForUnregistered/:id                           com.bkt.controllers.PaymentLogController.paymentFromUnregisteredById(id :Long)
+GET      /paymentlogsForUnregistered                           com.bkt.controllers.PaymentLogController.listAllFromUnregisteredStudents()
+GET      /paymentlogsForUnregistered/searchall/:keyword                           com.bkt.controllers.PaymentLogController.searchAllFromUnRegistered(keyword :String)
+GET      /paymentlogs/searchallunregistered/institute/:instId/:keyword          com.bkt.controllers.PaymentLogController.searchAllUnRegisteredByInsist(instId :Long,keyword :String)
+GET      /paymentLogs/institute/unregistered/paging/:instId/:startNum/:endNum      com.bkt.controllers.PaymentLogController.allUnRegisteredByInstIdPaging(instId:Long, startNum:Long,endNum:Long)
+POST     /unRegisteredCreatePaymentLog                         com.bkt.controllers.PaymentLogController.createPaymentUnRegisteredStudentJson()
+
+GET      /paymentlogs/statsByYear/:instID/:year                           com.bkt.controllers.PaymentLogController.paymentStatByYear(instID :Long,year: String)
+GET      /paymentlogs/statsByYear/studentgrouped/:instID/:year                           com.bkt.controllers.PaymentLogController.paymentStatGroupByStudentPerYear(instID :Long,year: String)
+GET      /paymentlogs/statsByYear/purposegrouped/:instID/:year                           com.bkt.controllers.PaymentLogController.paymentStatGroupByPurposePerYear(instID :Long,year: String)
+
+# User accounts
+GET      /userAccounts                          com.bkt.controllers.UserController.listJson()
+GET      /userAccounts/:id                      com.bkt.controllers.UserController.showJson(id :Long)
+GET      /userAccounts/paging/:startNum/:endNum      com.bkt.controllers.UserController.allByPaging(startNum:Long,endNum:Long)
+GET      /userAccounts/institute/paging/:instId/:startNum/:endNum      com.bkt.controllers.UserController.allByInstIdPaging(instId:Long, startNum:Long,endNum:Long)
+GET      /userAccounts/userProfile/paging/:groupId/:startNum/:endNum      com.bkt.controllers.UserController.allByGroupIdPaging(groupId:Long, startNum:Long,endNum:Long)
+# GET      /newUserAccount                        com.bkt.controllers.UserController.index()
+POST     /createUserAccount                     com.bkt.controllers.UserController.createUserJson()
+POST     /updateUserAccount                     com.bkt.controllers.UserController.updateUserJson()
+POST     /deleteUserAccount                   com.bkt.controllers.UserController.deleteUserJson()
+POST    /userAccounts/login					    com.bkt.controllers.UserController.userCredentials()
+
+# User profiles
+GET      /profiles                          com.bkt.controllers.UserProfileController.listJson()
+GET      /profiles/:id                      com.bkt.controllers.UserProfileController.showJson(id :Long)
+# GET      /newProfile                        com.bkt.controllers.UserProfileController.index()
+POST     /createProfile                     com.bkt.controllers.UserProfileController.createProfileJson()
+POST     /deleteProfile                     com.bkt.controllers.UserProfileController.deleteProfileJson()
+POST     /updateProfile                     com.bkt.controllers.UserProfileController.updateProfileJson()
+
+# User Privilege
+GET      /privileges                          com.bkt.controllers.UserPrivilegeController.listJson()
+GET      /privileges/:id                      com.bkt.controllers.UserPrivilegeController.showJson(id :Long)
+# GET      /newPrivilege                        com.bkt.controllers.UserPrivilegeController.index()
+POST     /createPrivilege                     com.bkt.controllers.UserPrivilegeController.createPrivilegeJson()
+POST     /updatePrivilege                    com.bkt.controllers.UserPrivilegeController.updatePrivilegeJson()
+POST     /deletePrivilege                     com.bkt.controllers.UserPrivilegeController.deletePrivilegeJson()
+
+# ProfilePrivilege Mapping
+GET      /assignedPrivileges                          com.bkt.controllers.ProfilePrivilegeController.listJson()
+GET      /assignedPrivileges/:id                      com.bkt.controllers.ProfilePrivilegeController.showJson(id :Long)
+# GET      /newAssignPrivileges                        com.bkt.controllers.ProfilePrivilegeController.index()
+POST     /assignePrivileges                     com.bkt.controllers.ProfilePrivilegeController.assignPrivilegeJson()
+POST     /removeAssignedPrivileges                     com.bkt.controllers.ProfilePrivilegeController.deleteAssignPrivilegeJson()
+POST     /updateAssignedPrivileges                     com.bkt.controllers.ProfilePrivilegeController.updateAssignedPrivilegeJson()
+GET    /assignedPrivileges/profiles/:profileId     com.bkt.controllers.ProfilePrivilegeController.listUserPrivileges(profileId:Long)
+
+# Academic programs
+GET      /academicprograms                          com.bkt.controllers.AcademicProgramController.listJson()
+GET      /academicprogram/:id                      com.bkt.controllers.AcademicProgramController.showJson(id :Long)
+GET      /academicprogram/paging/:startNum/:endNum      com.bkt.controllers.AcademicProgramController.allByPaging(startNum:Long,endNum:Long)
+POST     /addacademicprogram                     com.bkt.controllers.AcademicProgramController.createAcademicProgramJson()
+POST     /updateacademicprogram                     com.bkt.controllers.AcademicProgramController.updateAcademicProgramJson()
+POST     /removeacademicprogram                     com.bkt.controllers.AcademicProgramController.deleteAcademicProgramJson()
+
+# Degree programs
+GET      /degreeprograms                          com.bkt.controllers.DegreeProgramController.listJson()
+GET      /degreeprogram/:id                      com.bkt.controllers.DegreeProgramController.showJson(id :Long)
+GET      /degreeprograms/faculty/:id                      com.bkt.controllers.DegreeProgramController.listByFacultyId(id :Long)
+GET      /degreeprograms/institute/:id                      com.bkt.controllers.DegreeProgramController.listByInstId(id :Long)
+GET      /degreeprograms/institute/faculty/:institutionId/:facultyId                      com.bkt.controllers.DegreeProgramController.listByInstIdAndFacultyId(institutionId :Long,facultyId:Long)
+GET      /degreeeprogram/paging/:startNum/:endNum      com.bkt.controllers.DegreeProgramController.allByPaging(startNum:Long,endNum:Long)
+POST     /adddegreeprogram                    com.bkt.controllers.DegreeProgramController.createAcademicProgramJson()
+POST     /updatedegreeprogram                     com.bkt.controllers.DegreeProgramController.updateAcademicProgramJson()
+POST     /removedegreeprogram                     com.bkt.controllers.DegreeProgramController.deleteAcademicProgramJson()
+
+# Degree Study programs
+GET      /degreestudyprograms                          com.bkt.controllers.DegreeStudyProgramController.listJson()
+GET      /degreestudyprogram/:id                      com.bkt.controllers.DegreeStudyProgramController.showJson(id :Long)
+GET      /degreestudyprogram/degreeprogram/:id                        com.bkt.controllers.DegreeStudyProgramController.listByDegreeId(id :Long)
+GET      /degreestudyprogram/studyType/:id                          com.bkt.controllers.DegreeStudyProgramController.listByStudyType(id :Long)
+GET      /degreestudyprogram/paging/:startNum/:endNum      com.bkt.controllers.DegreeStudyProgramController.allByPaging(startNum:Long,endNum:Long)
+POST     /adddegreestudyprogram                    com.bkt.controllers.DegreeStudyProgramController.createAcademicProgramJson()
+POST     /updatedegreestudyprogram                     com.bkt.controllers.DegreeStudyProgramController.updateAcademicProgramJson()
+POST     /removedegreestudyprogram                     com.bkt.controllers.DegreeStudyProgramController.deleteAcademicProgramJson()
+
+# faculty based academics
+GET      /facultyacademics                          com.bkt.controllers.FacultyAcademicController.listJson()
+GET      /facultyacademic/:id                      com.bkt.controllers.FacultyAcademicController.showJson(id :Long)
+GET      /facultyacademic/faculty/:id                      com.bkt.controllers.FacultyAcademicController.listByFacultyId(id :Long)
+GET      /facultyacademic/academicprogram/:id                      com.bkt.controllers.FacultyAcademicController.listAcademicProgramId(id :Long)
+GET      /facultyacademic/paging/:startNum/:endNum      com.bkt.controllers.FacultyAcademicController.allByPaging(startNum:Long,endNum:Long)
+POST     /addfacultyacademic                    com.bkt.controllers.FacultyAcademicController.createRecord()
+POST     /updatefacultyacademic                     com.bkt.controllers.FacultyAcademicController.updateRecord()
+POST     /removefacultyacademic                     com.bkt.controllers.FacultyAcademicController.deleteRecord()
+
+# Institution academic programs
+GET      /instacademics                          com.bkt.controllers.InstAcademicController.listJson()
+GET      /instacademic/:id                      com.bkt.controllers.InstAcademicController.showJson(id :Long)
+GET      /instacademics/institution/:id          com.bkt.controllers.InstAcademicController.listByInstId(id :Long)
+GET      /instacademic/academicprogram/:id       com.bkt.controllers.InstAcademicController.listByAcademicProgramId(id :Long)
+GET      /instacademic/paging/:startNum/:endNum      com.bkt.controllers.InstAcademicController.allByPaging(startNum:Long,endNum:Long)
+POST     /addinstacademic                    com.bkt.controllers.InstAcademicController.createRecord()
+POST     /updateinstacademic                    com.bkt.controllers.InstAcademicController.updateRecord()
+POST     /removeinstacademic                    com.bkt.controllers.InstAcademicController.deleteRecord()
+
+# Institution calendar
+GET      /instcalendars                          com.bkt.controllers.InstitutionCalenderController.listJson()
+GET      /instcalendar/:id                      com.bkt.controllers.InstitutionCalenderController.showJson(id :Long)
+GET      /instcalendars/instid/:id                      com.bkt.controllers.InstitutionCalenderController.listAllByInstId(id :Long)
+GET      /instcalendar/paging/:startNum/:endNum      com.bkt.controllers.InstitutionCalenderController.allByPaging(startNum:Long,endNum:Long)
+POST     /addinstcalendar                    com.bkt.controllers.InstitutionCalenderController.createRecord()
+POST     /updateinstcalendar                    com.bkt.controllers.InstitutionCalenderController.updateRecord()
+POST     /removeinstcalendar                    com.bkt.controllers.InstitutionCalenderController.deleteRecord()
+
+# Institution none degree programs here
+GET      /nonedegreeprograms                          com.bkt.controllers.NoneDegreeProgramController.listJson()
+GET      /nonedegreeprogram/:id                      com.bkt.controllers.NoneDegreeProgramController.showJson(id :Long)
+GET      /nonedegreeprograms/instid/:id                      com.bkt.controllers.NoneDegreeProgramController.listByInstId(id :Long)
+GET      /nonedegreeprograms/institution/faculty/:id/:facultyId                      com.bkt.controllers.NoneDegreeProgramController.listByInstIdAndFacultyId(id :Long,facultyId:Long)
+GET      /nonedegreeprogram/paging/:startNum/:endNum      com.bkt.controllers.NoneDegreeProgramController.allByPaging(startNum:Long,endNum:Long)
+POST     /addnonedegreeprogram                    com.bkt.controllers.NoneDegreeProgramController.createRecord()
+POST     /updatenonedegreeprogram                    com.bkt.controllers.NoneDegreeProgramController.updateRecord()
+POST     /removenonedegreeprogram                   com.bkt.controllers.NoneDegreeProgramController.deleteRecord()
+
+# Degree Study programs
+GET      /nonedegreestudyprograms                          com.bkt.controllers.NoneDegreeStudyProgramController.listJson()
+GET      /nonedegreestudyprogram/:id                      com.bkt.controllers.NoneDegreeStudyProgramController.showJson(id :Long)
+GET      /nonedegreestudyprogram/degreeprogram/:id                        com.bkt.controllers.NoneDegreeStudyProgramController.listByDegreeId(id :Long)
+GET      /nonedegreestudyprogram/studyType/:id                          com.bkt.controllers.NoneDegreeStudyProgramController.listByStudyType(id :Long)
+GET      /nonedegreestudyprogram/paging/:startNum/:endNum      com.bkt.controllers.NoneDegreeStudyProgramController.allByPaging(startNum:Long,endNum:Long)
+POST     /addnonedegreestudyprogram                    com.bkt.controllers.NoneDegreeStudyProgramController.createAcademicProgramJson()
+POST     /updatenonedegreestudyprogram                     com.bkt.controllers.NoneDegreeStudyProgramController.updateAcademicProgramJson()
+POST     /removenonedegreestudyprogram                     com.bkt.controllers.NoneDegreeStudyProgramController.deleteAcademicProgramJson()
+
+# Student expected payment log
+GET      /studentpaylongs                          com.bkt.controllers.StudentPayLogController.listJson()
+GET      /studentpaylong/:id                      com.bkt.controllers.StudentPayLogController.showJson(id :Long)
+GET      /studentpaylong/student/tuitionfees/:studentId/:tuitionId     com.bkt.controllers.StudentPayLogController.showByStudentAndTuition(studentId :Long,tuitionId:Long)
+GET      /studentpaylongs/instid/:id                      com.bkt.controllers.StudentPayLogController.listByInstId(id :Long)
+GET      /studentpaylongs/studentid/:id                      com.bkt.controllers.StudentPayLogController.listByStudentId(id :Long)
+GET      /studentpaylongs/paging/:startNum/:endNum      com.bkt.controllers.StudentPayLogController.allByPaging(startNum:Long,endNum:Long)
+GET      /studentpaylongs/instid/paging/:instId/:startNum/:endNum      com.bkt.controllers.StudentPayLogController.allByInstIdPaging(instId:Long,startNum:Long,endNum:Long)
+GET      /studentpaylongs/student/paging/:studentId/:startNum/:endNum      com.bkt.controllers.StudentPayLogController.allByStudentIdPaging(studentId:Long,startNum:Long,endNum:Long)
+POST     /addstudentpaylong                    com.bkt.controllers.StudentPayLogController.createRecord()
+POST     /updatestudentpaylong                    com.bkt.controllers.StudentPayLogController.updateRecord()
+POST     /removestudentpaylong                   com.bkt.controllers.StudentPayLogController.deleteRecord()
+
+# Available study program types
+GET      /studyprogramtypes                          com.bkt.controllers.StudyProgramTypeController.listJson()
+GET      /studyprogramtype/:id                      com.bkt.controllers.StudyProgramTypeController.showJson(id :Long)
+GET      /studyprogramtypes/paging/:startNum/:endNum      com.bkt.controllers.StudyProgramTypeController.allByPaging(startNum:Long,endNum:Long)
+POST     /addstudyprogramtype                    com.bkt.controllers.StudyProgramTypeController.createRecord()
+POST     /updatestudyprogramtype                    com.bkt.controllers.StudyProgramTypeController.updateRecord()
+POST     /removestudyprogramtype                   com.bkt.controllers.StudyProgramTypeController.deleteRecord()
+
+# configured tuition fees structure
+GET      /tuitionfees                          com.bkt.controllers.TuitionFeesController.listJson()
+GET      /tuitionfee/:id                      com.bkt.controllers.TuitionFeesController.showJson(id :Long)
+GET      /tuitionfees/instcalendar/:id                      com.bkt.controllers.TuitionFeesController.listByInstCalenderId(id :Long)
+GET      /tuitionfees/degreeprogram/:id                      com.bkt.controllers.TuitionFeesController.listByDegreeProgramId(id :Long)
+GET      /tuitionfees/nonedegreeprogram/:id                      com.bkt.controllers.TuitionFeesController.listByNoneDegreeProgramId(id :Long)
+GET      /tuitionfees/paging/:startNum/:endNum      com.bkt.controllers.TuitionFeesController.allByPaging(startNum:Long,endNum:Long)
+POST     /addtuitionfees                    com.bkt.controllers.TuitionFeesController.createRecord()
+POST     /updatetuitionfees                    com.bkt.controllers.TuitionFeesController.updateRecord()
+POST     /removetuitionfees                   com.bkt.controllers.TuitionFeesController.deleteRecord()
+
+#APIs for third party payments
+POST     /thirdparty/getstudentdetails/                           com.bkt.controllers.payment.BankSideController.getStudentDetails()
+POST     /thirdparty/getschooldetails/                           com.bkt.controllers.payment.BankSideController.getSchoolDetails()
+POST     /thirdparty/paymentforregistered/                          com.bkt.controllers.payment.BankSideController.postSchoolFeesPaidByRegisteredStudent()
+POST     /thirdparty/paymentforunregistered/                           com.bkt.controllers.payment.BankSideController.postSchoolFeesPaidByUnRegisteredStudent()
+POST     /thirdparty/getallschools/                           com.bkt.controllers.payment.BankSideController.listJson()
+
+#USSD url
+POST     /ussdinterface                    com.bkt.controllers.USSDHandler.ussdRequests()
+POST     /momoapproved                    com.bkt.controllers.USSDHandler.approvedPayment()
+GET     /crontrigger                    com.bkt.controllers.USSDHandler.sysCrosTrigger()
+
+OPTIONS  /*all      com.bkt.controllers.Application.preflight(all)
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file               controllers.Assets.at(path="/public", file)

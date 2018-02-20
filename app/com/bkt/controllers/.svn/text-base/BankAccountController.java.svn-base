@@ -1,0 +1,316 @@
+/**
+ * 
+ */
+package com.bkt.controllers;
+
+import java.util.List;
+
+import com.avaje.ebean.Page;
+import com.bkt.controllers.auth.AgendaAuthenticator;
+import com.bkt.models.BankAccount;
+import com.bkt.utils.LogRequest;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import play.data.Form;
+import play.libs.Json;
+import play.mvc.BodyParser;
+import play.mvc.Controller;
+import play.mvc.Result;
+import play.mvc.Security.Authenticated;
+
+/**
+ * @author pc
+ *
+ */
+@LogRequest
+@Authenticated(AgendaAuthenticator.class)
+@com.bkt.utils.CorsComposition.Cors
+public class BankAccountController extends Controller {
+
+	public static Result listJson() {
+		ObjectNode httpStatus = Json.newObject();
+		httpStatus.put("status", "success");
+		httpStatus.put("Code", "200");
+		
+		List<BankAccount> all = BankAccount.find.all();
+		
+		
+		if (all.isEmpty()) {
+			ObjectNode userJson = Json.newObject();
+
+			userJson.put("status", "No data");
+			
+			httpStatus.put("response", userJson);
+			return ok(httpStatus);
+		} else {
+			ObjectNode userJson;
+			ObjectMapper mapper = new ObjectMapper();
+			ArrayNode array = mapper.createArrayNode();
+			for (BankAccount user : all) {
+				userJson = Json.newObject();
+
+				userJson.put("accountId", user.accountId);
+				userJson.put("accountNumber", user.accountNumber);
+				userJson.put("accountStatus", user.accountStatus);
+				userJson.put("bankId", user.bankId);
+				userJson.put("instId", user.instId);
+
+				array.add(userJson);
+			}
+			
+			httpStatus.put("response", array);
+			return ok(httpStatus);
+		}
+
+	}public static Result allByPaging(Long pageNum, Long pageMax) {
+		ObjectNode httpStatus = Json.newObject();
+		httpStatus.put("status", "success");
+		httpStatus.put("Code", "200");
+		
+		// Paging starts
+		Page<BankAccount> pagedList = BankAccount.find.findPagingList(pageMax.intValue())
+				.setFetchAhead(false).getPage(pageNum.intValue());
+
+		// fetch and return the list
+		List<BankAccount> allAccounts = pagedList.getList();
+
+		// get the total row count (from the future)
+		int totalRowCount = pagedList.getTotalRowCount();
+
+		if (allAccounts.size()<0) {
+			ObjectNode userJson = Json.newObject();
+
+			userJson.put("status", "No data");
+			httpStatus.put("response", userJson);
+			return ok(httpStatus);
+		} else {
+			ObjectNode respJson = Json.newObject();
+
+			respJson.put("rowCount", totalRowCount);
+			
+			ObjectNode userJson;
+			ObjectMapper mapper = new ObjectMapper();
+			ArrayNode array = mapper.createArrayNode();
+			for (BankAccount user : allAccounts) {
+				userJson = Json.newObject();
+
+				userJson.put("accountId", user.accountId);
+				userJson.put("accountNumber", user.accountNumber);
+				userJson.put("accountStatus", user.accountStatus);
+				userJson.put("bankId", user.bankId);
+				userJson.put("instId", user.instId);
+
+				array.add(userJson);
+			}
+			httpStatus.put("response", respJson);
+			return ok(httpStatus);
+		}
+
+	}public static Result allByInstIdPaging(Long instId,Long pageNum, Long pageMax) {
+		ObjectNode httpStatus = Json.newObject();
+		httpStatus.put("status", "success");
+		httpStatus.put("Code", "200");
+		
+		// Paging starts
+		Page<BankAccount> pagedList = BankAccount.find.where().eq("inst_id", instId).findPagingList(pageMax.intValue())
+				.setFetchAhead(false).getPage(pageNum.intValue());
+
+		// fetch and return the list
+		List<BankAccount> allAccounts = pagedList.getList();
+
+		// get the total row count (from the future)
+		int totalRowCount = pagedList.getTotalRowCount();
+
+		if (allAccounts.size()<0) {
+			ObjectNode userJson = Json.newObject();
+
+			userJson.put("status", "No data");
+			
+			httpStatus.put("response", userJson);
+			return ok(httpStatus);
+		} else {
+			ObjectNode respJson = Json.newObject();
+
+			respJson.put("rowCount", totalRowCount);
+			
+			ObjectNode userJson;
+			ObjectMapper mapper = new ObjectMapper();
+			ArrayNode array = mapper.createArrayNode();
+			for (BankAccount user : allAccounts) {
+				userJson = Json.newObject();
+
+				userJson.put("accountId", user.accountId);
+				userJson.put("accountNumber", user.accountNumber);
+				userJson.put("accountStatus", user.accountStatus);
+				userJson.put("bankId", user.bankId);
+				userJson.put("instId", user.instId);
+
+				array.add(userJson);
+			}
+			respJson.put("recordFound", array);
+			httpStatus.put("response", respJson);
+			return ok(httpStatus);
+		}
+
+	}
+
+	public static Result showJson(Long id) {
+		ObjectNode httpStatus = Json.newObject();
+		httpStatus.put("status", "success");
+		httpStatus.put("Code", "200");
+		
+		BankAccount user = BankAccount.find.byId(id);
+		if (user.accountId > 0) {
+			ObjectNode userJson = Json.newObject();
+
+			userJson.put("accountId", user.accountId);
+			userJson.put("accountNumber", user.accountNumber);
+			userJson.put("accountStatus", user.accountStatus);
+			userJson.put("bankId", user.bankId);
+			userJson.put("instId", user.instId);
+
+			httpStatus.put("response", userJson);
+			return ok(httpStatus);
+		} else {
+			ObjectNode userJson = Json.newObject();
+
+			userJson.put("status", "No data");
+
+			httpStatus.put("response", userJson);
+			return ok(httpStatus);
+		}
+
+	}
+
+	@BodyParser.Of(BodyParser.Json.class)
+	public static Result createBankAccountJson() {
+		ObjectNode httpStatus = Json.newObject();
+		httpStatus.put("status", "success");
+		
+		JsonNode asJson = request().body().asJson();
+
+		if (asJson.isNull()) {
+			httpStatus.put("Code", "200");
+			
+			ObjectNode userJson = Json.newObject();
+			userJson.put("status", "No data");
+			
+			httpStatus.put("response", userJson);
+			return ok(httpStatus);
+		} else {
+			
+			Form<BankAccount> contactForm = Form.form(BankAccount.class).bind(asJson);
+			if (contactForm.hasErrors()) {
+				httpStatus.put("Code", "401");
+				
+				httpStatus.put("response", contactForm.errorsAsJson());
+				
+				return badRequest(httpStatus);
+				
+			} else {
+				ObjectNode userJson = Json.newObject();
+				BankAccount bank = new BankAccount();
+
+				bank.accountNumber = asJson.findPath("accountNumber").textValue();
+				bank.accountStatus = asJson.findPath("accountStatus").textValue();
+				bank.bankId = asJson.findPath("bankId").longValue();
+				bank.instId = asJson.findPath("instId").longValue();
+
+				// save the user account
+				bank.save();
+
+				userJson.put("status", "saved");
+				
+				httpStatus.put("response", userJson);
+				return ok(httpStatus);
+			}
+		}
+
+	}
+
+	@BodyParser.Of(BodyParser.Json.class)
+	public static Result updateBankAccountJson() {
+		ObjectNode httpStatus = Json.newObject();
+		
+		JsonNode asJson = request().body().asJson();
+
+		if (asJson.isNull()) {
+			httpStatus.put("Code", "200");
+			
+			ObjectNode userJson = Json.newObject();
+			userJson.put("status", "No data");
+			
+			httpStatus.put("response", userJson);
+			return ok(httpStatus);
+		} else {
+			Form<BankAccount> contactForm = Form.form(BankAccount.class).bind(asJson);
+			if (contactForm.hasErrors()) {
+				httpStatus.put("Code", "401");
+				httpStatus.put("status", "Bad request");
+				
+				httpStatus.put("response", contactForm.errorsAsJson());
+				
+				return badRequest(httpStatus);
+				
+				
+			} else {
+			ObjectNode userJson = Json.newObject();
+
+			BankAccount bank = BankAccount.find.byId(asJson.findPath("accountId").longValue());
+
+			bank.accountId = asJson.findPath("accountId").longValue();
+			bank.accountNumber = asJson.findPath("accountNumber").textValue();
+			bank.accountStatus = asJson.findPath("accountStatus").textValue();
+			bank.bankId = asJson.findPath("bankId").longValue();
+
+			// save the user account
+			bank.update();
+
+			userJson.put("status", "updated");
+			httpStatus.put("Code", "200");
+			httpStatus.put("status", "success");
+			httpStatus.put("response", userJson);
+			
+			return ok(httpStatus);
+			}
+		}
+
+	}
+
+	@BodyParser.Of(BodyParser.Json.class)
+	public static Result deleteBankAccountJson() {
+		JsonNode asJson = request().body().asJson();
+		ObjectNode httpStatus = Json.newObject();
+		
+		if (asJson.isNull()) {
+			ObjectNode userJson = Json.newObject();
+			userJson.put("status", "Not deleted");
+			
+			httpStatus.put("Code", "200");
+			httpStatus.put("status", "success");
+			httpStatus.put("response", userJson);
+			
+			return ok(httpStatus);
+			
+			
+		} else {
+			ObjectNode userJson = Json.newObject();
+
+			BankAccount bank = BankAccount.find.byId(asJson.findPath("accountId").longValue());
+			// save the user account
+			bank.delete();
+
+			userJson.put("status", "updated");
+			
+			httpStatus.put("Code", "200");
+			httpStatus.put("status", "success");
+			httpStatus.put("response", userJson);
+			return ok(httpStatus);
+		}
+
+	}
+
+}

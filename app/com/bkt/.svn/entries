@@ -1,0 +1,47 @@
+10
+
+dir
+4
+http://192.168.50.222/svn/urubuto-universities/university/app/com/bkt
+http://192.168.50.222/svn/urubuto-universities
+
+
+
+2017-06-12T14:25:05.489205Z
+4
+stanleym
+
+
+svn:special svn:externals svn:needs-lock
+
+
+
+
+
+
+
+
+
+
+
+2ded4c59-469b-40d2-a153-848a5fad087b
+
+
+
+
+
+
+0
+
+controllers
+dir
+
+models
+dir
+
+utils
+dir
+
+views
+dir
+

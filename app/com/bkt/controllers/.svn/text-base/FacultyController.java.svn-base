@@ -1,0 +1,354 @@
+/**
+ * 
+ */
+package com.bkt.controllers;
+
+import java.util.List;
+
+import com.avaje.ebean.Page;
+import com.bkt.controllers.auth.AgendaAuthenticator;
+import com.bkt.models.Faculty;
+import com.bkt.utils.LogRequest;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import play.data.Form;
+import play.libs.Json;
+import play.mvc.BodyParser;
+import play.mvc.Controller;
+import play.mvc.Result;
+import play.mvc.Security.Authenticated;
+
+/**
+ * @author pc
+ *
+ */
+@LogRequest
+@Authenticated(AgendaAuthenticator.class)
+@com.bkt.utils.CorsComposition.Cors
+public class FacultyController extends Controller {
+
+	public static Result listJson() {
+		List<Faculty> all = Faculty.find.all();
+		ObjectNode httpStatus = Json.newObject();
+		
+		if (all.isEmpty()) {
+			ObjectNode facultyJson = Json.newObject();
+
+			facultyJson.put("status", "No data");
+			
+			httpStatus.put("Code", "401");
+			httpStatus.put("status", "Bad request");
+			httpStatus.put("response", facultyJson);
+			
+			return badRequest(httpStatus);
+		} else {
+			ObjectNode facultyJson;
+			ObjectMapper mapper = new ObjectMapper();
+			ArrayNode array = mapper.createArrayNode();
+			for (Faculty user : all) {
+				facultyJson = Json.newObject();
+
+				facultyJson.put("accronym", user.accronym);
+				facultyJson.put("code", user.code);
+				facultyJson.put("facultyId", user.facultyId);
+				facultyJson.put("instId", user.instId);
+				facultyJson.put("name", user.name);
+
+				array.add(facultyJson);
+			}
+			httpStatus.put("Code", "200");
+			httpStatus.put("status", "Success");
+			httpStatus.put("response", array);
+			
+			return ok(httpStatus);
+		}
+
+	}public static Result allByPaging(Long pageNum, Long pageMax) {
+		ObjectNode httpStatus = Json.newObject();
+		
+		// Paging starts
+				Page<Faculty> pagedList = Faculty.find.findPagingList(pageMax.intValue())
+						.setFetchAhead(false).getPage(pageNum.intValue());
+
+				// fetch and return the list
+				List<Faculty> allFaculties = pagedList.getList();
+
+				// get the total row count (from the future)
+				int totalRowCount = pagedList.getTotalRowCount();
+				
+		
+
+		if (allFaculties.isEmpty()) {
+			ObjectNode facultyJson = Json.newObject();
+
+			facultyJson.put("status", "No data");
+			
+			httpStatus.put("Code", "401");
+			httpStatus.put("status", "bad request");
+			httpStatus.put("response", httpStatus);
+			
+			return badRequest(httpStatus);
+		} else {
+			ObjectNode respJson = Json.newObject();
+
+			respJson.put("rowCount", totalRowCount);
+			
+			ObjectNode facultyJson;
+			ObjectMapper mapper = new ObjectMapper();
+			ArrayNode array = mapper.createArrayNode();
+			for (Faculty user : allFaculties) {
+				facultyJson = Json.newObject();
+
+				facultyJson.put("accronym", user.accronym);
+				facultyJson.put("code", user.code);
+				facultyJson.put("facultyId", user.facultyId);
+				facultyJson.put("instId", user.instId);
+				facultyJson.put("name", user.name);
+
+				array.add(facultyJson);
+			}
+			
+			httpStatus.put("Code", "200");
+			httpStatus.put("status", "Success");
+			httpStatus.put("response", array);
+			
+			return ok(httpStatus);
+		}
+
+	}public static Result allByInstIdPaging(Long instId,Long pageNum, Long pageMax) {
+		ObjectNode httpStatus = Json.newObject();
+		
+		// Paging starts
+				Page<Faculty> pagedList = Faculty.find.where().eq("inst_id", instId).findPagingList(pageMax.intValue())
+						.setFetchAhead(false).getPage(pageNum.intValue());
+
+				// fetch and return the list
+				List<Faculty> allFaculties = pagedList.getList();
+
+				// get the total row count (from the future)
+				int totalRowCount = pagedList.getTotalRowCount();
+				
+		
+
+		if (allFaculties.isEmpty()) {
+			ObjectNode facultyJson = Json.newObject();
+
+			facultyJson.put("status", "No data");
+			
+			httpStatus.put("Code", "401");
+			httpStatus.put("status", "Bad request");
+			httpStatus.put("response", facultyJson);
+			
+			return badRequest(httpStatus);
+		} else {
+			ObjectNode respJson = Json.newObject();
+
+			respJson.put("rowCount", totalRowCount);
+			
+			ObjectNode facultyJson;
+			ObjectMapper mapper = new ObjectMapper();
+			ArrayNode array = mapper.createArrayNode();
+			for (Faculty user : allFaculties) {
+				facultyJson = Json.newObject();
+
+				facultyJson.put("accronym", user.accronym);
+				facultyJson.put("code", user.code);
+				facultyJson.put("facultyId", user.facultyId);
+				facultyJson.put("instId", user.instId);
+				facultyJson.put("name", user.name);
+
+				array.add(facultyJson);
+			}
+			httpStatus.put("Code", "200");
+			httpStatus.put("status", "Success");
+			httpStatus.put("response", array);
+			
+			return ok(httpStatus);
+		}
+
+	}
+
+	public static Result showJson(Long id) {
+		ObjectNode httpStatus = Json.newObject();
+		
+		Faculty user = Faculty.find.byId(id);
+		if (user.facultyId > 0) {
+			ObjectNode facultyJson = Json.newObject();
+
+			facultyJson.put("accronym", user.accronym);
+			facultyJson.put("code", user.code);
+			facultyJson.put("facultyId", user.facultyId);
+			facultyJson.put("instId", user.instId);
+			facultyJson.put("name", user.name);
+
+			httpStatus.put("Code", "200");
+			httpStatus.put("status", "Success");
+			httpStatus.put("response", facultyJson);
+			
+			return ok(httpStatus);
+		} else {
+			ObjectNode facultyJson = Json.newObject();
+
+			facultyJson.put("status", "No data");
+
+			httpStatus.put("Code", "401");
+			httpStatus.put("status", "Bad request");
+			httpStatus.put("response", facultyJson);
+			
+			return badRequest(httpStatus);
+		}
+
+	}
+
+	@BodyParser.Of(BodyParser.Json.class)
+	public static Result createFacultyJson() {
+		ObjectNode httpStatus = Json.newObject();
+		
+		JsonNode asJson = request().body().asJson();
+
+		if (asJson.isNull()) {
+			ObjectNode facultyJson = Json.newObject();
+			facultyJson.put("status", "No data");
+			
+			httpStatus.put("Code", "401");
+			httpStatus.put("status", "Bad request");
+			httpStatus.put("response", facultyJson);
+			
+			return badRequest(httpStatus);
+		} else {
+
+			Form<Faculty> contactForm = Form.form(Faculty.class).bind(asJson);
+			if (contactForm.hasErrors()) {
+				
+				httpStatus.put("Code", "401");
+				httpStatus.put("status", "bad request");
+				httpStatus.put("response", contactForm.errorsAsJson());
+				
+				return badRequest(httpStatus);
+			} else {
+				ObjectNode facultyJson = Json.newObject();
+				Faculty faculty = new Faculty();
+
+				faculty.accronym = asJson.findPath("accronym").textValue();
+				faculty.code = asJson.findPath("code").textValue();
+				faculty.instId = asJson.findPath("instId").longValue();
+				faculty.name = asJson.findPath("name").textValue();
+
+				// save the user account
+				try {
+					faculty.save();
+					facultyJson.put("status", "saved");
+					
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					facultyJson.put("status", e.getMessage());
+					
+				}
+				
+				httpStatus.put("Code", "200");
+				httpStatus.put("status", "Success");
+				httpStatus.put("response", facultyJson);
+				
+				return ok(httpStatus);
+			}
+		}
+
+	}
+
+	@BodyParser.Of(BodyParser.Json.class)
+	public static Result updateFacultyJson() {
+		ObjectNode httpStatus = Json.newObject();
+		
+		JsonNode asJson = request().body().asJson();
+
+		if (asJson.isNull()) {
+			ObjectNode facultyJson = Json.newObject();
+			facultyJson.put("status", "No data");
+			
+			httpStatus.put("Code", "401");
+			httpStatus.put("status", "Bad request");
+			httpStatus.put("response", facultyJson);
+			
+			return badRequest(httpStatus);
+		} else {
+			Form<Faculty> contactForm = Form.form(Faculty.class).bind(asJson);
+			if (contactForm.hasErrors()) {
+				
+				httpStatus.put("Code", "401");
+				httpStatus.put("status", "bad request");
+				httpStatus.put("response", contactForm.errorsAsJson());
+				
+				return badRequest(httpStatus);
+			} else {
+				ObjectNode facultyJson = Json.newObject();
+
+				Faculty faculty = Faculty.find.byId(asJson.findPath("facultyId").longValue());
+
+				faculty.accronym = asJson.findPath("accronym").textValue();
+				faculty.code = asJson.findPath("code").textValue();
+				faculty.instId = asJson.findPath("instId").longValue();
+				faculty.name = asJson.findPath("name").textValue();
+
+				// save the user account
+				try {
+					faculty.update();
+
+					facultyJson.put("status", "updated");
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					facultyJson.put("status", e.getMessage());
+				}
+				httpStatus.put("Code", "200");
+				httpStatus.put("status", "Success");
+				httpStatus.put("response", facultyJson);
+				
+				return ok(httpStatus);
+			}
+		}
+
+	}
+
+	@BodyParser.Of(BodyParser.Json.class)
+	public static Result deleteFacultyJson() {
+		ObjectNode httpStatus = Json.newObject();
+		
+		JsonNode asJson = request().body().asJson();
+
+		if (asJson.isNull()) {
+			ObjectNode facultyJson = Json.newObject();
+			facultyJson.put("status", "No data");
+			
+			httpStatus.put("Code", "401");
+			httpStatus.put("status", "Bad request");
+			httpStatus.put("response", facultyJson);
+			
+			return badRequest(httpStatus);
+		} else {
+			ObjectNode facultyJson = Json.newObject();
+
+			Faculty faculty = Faculty.find.byId(asJson.findPath("facultyId").longValue());
+			// save the user account
+			try {
+				faculty.delete();
+
+				facultyJson.put("status", "updated");
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				facultyJson.put("status", e.getMessage());
+			}
+			httpStatus.put("Code", "200");
+			httpStatus.put("status", "Success");
+			httpStatus.put("response", facultyJson);
+			
+			return ok(httpStatus);
+		}
+
+	}
+
+}

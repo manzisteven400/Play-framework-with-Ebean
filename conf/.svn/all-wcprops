@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/urubuto-universities/!svn/ver/4/university/conf
+END
+application.conf
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/urubuto-universities/!svn/ver/4/university/conf/application.conf
+END
+logback.xml
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/urubuto-universities/!svn/ver/5/university/conf/logback.xml
+END
+application-logger.xml
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/urubuto-universities/!svn/ver/5/university/conf/application-logger.xml
+END
+play.plugins
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/urubuto-universities/!svn/ver/5/university/conf/play.plugins
+END
+routes
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/urubuto-universities/!svn/ver/7/university/conf/routes
+END

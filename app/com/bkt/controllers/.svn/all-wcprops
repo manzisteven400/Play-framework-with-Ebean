@@ -1,0 +1,95 @@
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/urubuto-universities/!svn/ver/4/university/app/com/bkt/controllers
+END
+Application.java
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/urubuto-universities/!svn/ver/6/university/app/com/bkt/controllers/Application.java
+END
+BankAccountController.java
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/svn/urubuto-universities/!svn/ver/7/university/app/com/bkt/controllers/BankAccountController.java
+END
+UserController.java
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svn/urubuto-universities/!svn/ver/7/university/app/com/bkt/controllers/UserController.java
+END
+ProfilePrivilegeController.java
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/svn/urubuto-universities/!svn/ver/7/university/app/com/bkt/controllers/ProfilePrivilegeController.java
+END
+Global.java
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/urubuto-universities/!svn/ver/6/university/app/com/bkt/controllers/Global.java
+END
+UserPrivilegeController.java
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/svn/urubuto-universities/!svn/ver/6/university/app/com/bkt/controllers/UserPrivilegeController.java
+END
+CorsPreflightController.java
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/svn/urubuto-universities/!svn/ver/6/university/app/com/bkt/controllers/CorsPreflightController.java
+END
+FacultyController.java
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/svn/urubuto-universities/!svn/ver/7/university/app/com/bkt/controllers/FacultyController.java
+END
+UserAccountArchiveController.java
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/svn/urubuto-universities/!svn/ver/5/university/app/com/bkt/controllers/UserAccountArchiveController.java
+END
+PaymentLogController.java
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/svn/urubuto-universities/!svn/ver/7/university/app/com/bkt/controllers/PaymentLogController.java
+END
+UserProfileController.java
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/svn/urubuto-universities/!svn/ver/7/university/app/com/bkt/controllers/UserProfileController.java
+END
+BankController.java
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svn/urubuto-universities/!svn/ver/7/university/app/com/bkt/controllers/BankController.java
+END
+StudentController.java
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/svn/urubuto-universities/!svn/ver/7/university/app/com/bkt/controllers/StudentController.java
+END
+InstitutionController.java
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/svn/urubuto-universities/!svn/ver/7/university/app/com/bkt/controllers/InstitutionController.java
+END
+PaymentPurposeController.java
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/svn/urubuto-universities/!svn/ver/7/university/app/com/bkt/controllers/PaymentPurposeController.java
+END

@@ -1,0 +1,178 @@
+/**
+ * 
+ */
+package com.bkt.controllers;
+
+import java.util.List;
+
+import com.bkt.controllers.auth.AgendaAuthenticator;
+import com.bkt.models.UserPrivilege;
+import com.bkt.models.UserProfile;
+import com.bkt.utils.LogRequest;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import play.data.Form;
+import play.libs.Json;
+import play.mvc.BodyParser;
+import play.mvc.Controller;
+import play.mvc.Result;
+import play.mvc.Security.Authenticated;
+
+/**
+ * @author pc
+ *
+ */
+@LogRequest
+@Authenticated(AgendaAuthenticator.class)
+@com.bkt.utils.CorsComposition.Cors
+public class UserPrivilegeController extends Controller {
+
+	public static Result listJson() {
+		List<UserPrivilege> all = UserPrivilege.find.all();
+
+		if (all.isEmpty()) {
+			ObjectNode userProfileJson = Json.newObject();
+
+			userProfileJson.put("status", "No data");
+			return badRequest(userProfileJson);
+		} else {
+			ObjectNode userProfileJson;
+			ObjectMapper mapper = new ObjectMapper();
+			ArrayNode array = mapper.createArrayNode();
+			for (UserPrivilege user : all) {
+				userProfileJson = Json.newObject();
+
+				userProfileJson.put("privilegeId", user.privilegeId);
+				userProfileJson.put("name", user.name);
+				userProfileJson.put("description", user.description);
+
+				array.add(userProfileJson);
+			}
+			return ok(array);
+		}
+
+	}
+
+	public static Result showJson(Long id) {
+		UserPrivilege user = UserPrivilege.find.byId(id);
+		if (user.privilegeId > 0) {
+			ObjectNode userProfileJson = Json.newObject();
+
+			userProfileJson.put("privilegeId", user.privilegeId);
+			userProfileJson.put("name", user.name);
+			userProfileJson.put("description", user.description);
+
+			return ok(userProfileJson);
+		} else {
+			ObjectNode userProfileJson = Json.newObject();
+
+			userProfileJson.put("status", "No data");
+
+			return badRequest(userProfileJson);
+		}
+
+	}
+
+	@BodyParser.Of(BodyParser.Json.class)
+	public static Result createPrivilegeJson() {
+		JsonNode asJson = request().body().asJson();
+
+		if (asJson.isNull()) {
+			ObjectNode userProfileJson = Json.newObject();
+			userProfileJson.put("status", "No data");
+			return badRequest(userProfileJson);
+		} else {
+			Form<UserPrivilege> contactForm = Form.form(UserPrivilege.class).bind(asJson);
+			if (contactForm.hasErrors()) {
+				return badRequest(contactForm.errorsAsJson());
+			} else {
+				ObjectNode userProfileJson = Json.newObject();
+				UserPrivilege userProfile = new UserPrivilege();
+
+				userProfileJson.put("name", userProfile.name);
+				userProfileJson.put("description", userProfile.description);
+
+				// save the user account
+				try {
+					userProfile.save();
+
+					userProfileJson.put("status", "saved");
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					userProfileJson.put("status", e.getMessage());
+				}
+				return ok(userProfileJson);
+			}
+		}
+
+	}
+
+	@BodyParser.Of(BodyParser.Json.class)
+	public static Result updatePrivilegeJson() {
+		JsonNode asJson = request().body().asJson();
+
+		if (asJson.isNull()) {
+			ObjectNode userProfileJson = Json.newObject();
+			userProfileJson.put("status", "No data");
+			return badRequest(userProfileJson);
+		} else {
+			Form<UserPrivilege> contactForm = Form.form(UserPrivilege.class).bind(asJson);
+			if (contactForm.hasErrors()) {
+				return badRequest(contactForm.errorsAsJson());
+			} else {
+				ObjectNode userProfileJson = Json.newObject();
+
+				UserPrivilege userProfile = UserPrivilege.find.byId(asJson.findPath("privilegeId").longValue());
+
+				userProfileJson.put("privilegeId", userProfile.privilegeId);
+				userProfileJson.put("name", userProfile.name);
+				userProfileJson.put("description", userProfile.description);
+
+				// save the user account
+				try {
+					userProfile.update();
+
+					userProfileJson.put("status", "updated");
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					userProfileJson.put("status", e.getMessage());
+				}
+				return ok(userProfileJson);
+			}
+		}
+
+	}
+
+	@BodyParser.Of(BodyParser.Json.class)
+	public static Result deletePrivilegeJson() {
+		JsonNode asJson = request().body().asJson();
+
+		if (asJson.isNull()) {
+			ObjectNode userProfileJson = Json.newObject();
+			userProfileJson.put("status", "No data");
+			return badRequest(userProfileJson);
+		} else {
+			ObjectNode userProfileJson = Json.newObject();
+
+			UserProfile userProfile = UserProfile.find.byId(asJson.findPath("privilegeId").longValue());
+			// delete the user account
+			try {
+				userProfile.delete();
+
+				userProfileJson.put("status", "deleted");
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				userProfileJson.put("status", e.getMessage());
+			}
+			return ok(userProfileJson);
+		}
+
+	}
+
+}

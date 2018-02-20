@@ -1,0 +1,286 @@
+/**
+ * 
+ */
+package com.bkt.controllers;
+
+import java.util.List;
+
+import com.bkt.controllers.auth.AgendaAuthenticator;
+import com.bkt.models.PaymentPurpose;
+import com.bkt.utils.LogRequest;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import play.data.Form;
+import play.libs.Json;
+import play.mvc.BodyParser;
+import play.mvc.Controller;
+import play.mvc.Result;
+import play.mvc.Security.Authenticated;
+
+/**
+ * @author pc
+ *
+ */
+@LogRequest
+@Authenticated(AgendaAuthenticator.class)
+@com.bkt.utils.CorsComposition.Cors
+public class PaymentPurposeController extends Controller {
+
+	public static Result listJson() {
+		ObjectNode httpStatus = Json.newObject();
+		List<PaymentPurpose> all = PaymentPurpose.find.all();
+
+		if (all.isEmpty()) {
+			ObjectNode userJson = Json.newObject();
+
+			userJson.put("status", "No data");
+
+			httpStatus.put("Code", "401");
+			httpStatus.put("status", "Bad request");
+			httpStatus.put("response", userJson);
+			
+			return badRequest(httpStatus);
+		} else {
+			ObjectNode userJson;
+			ObjectMapper mapper = new ObjectMapper();
+			ArrayNode array = mapper.createArrayNode();
+			for (PaymentPurpose user : all) {
+				userJson = Json.newObject();
+
+				userJson.put("accountId", user.accountId);
+				userJson.put("accPriority", user.accPriority);
+				userJson.put("description", user.description);
+				userJson.put("purpose", user.purpose);
+
+				array.add(userJson);
+			}
+			
+			httpStatus.put("Code", "200");
+			httpStatus.put("status", "Success");
+			httpStatus.put("response", array);
+			
+			return ok(httpStatus);
+		}
+
+	}
+
+	public static Result listByInstitutionJson(Long instId) {
+		ObjectNode httpStatus = Json.newObject();
+		List<PaymentPurpose> all = PaymentPurpose.find.findList();
+
+		if (all.isEmpty()) {
+			ObjectNode userJson = Json.newObject();
+
+			userJson.put("status", "No data");
+
+			httpStatus.put("Code", "401");
+			httpStatus.put("status", "Bad request");
+			httpStatus.put("response", userJson);
+			
+			return badRequest(userJson);
+		} else {
+			
+			ObjectNode userJson;
+			ObjectMapper mapper = new ObjectMapper();
+			ArrayNode array = mapper.createArrayNode();
+			for (PaymentPurpose user : all) {
+				userJson = Json.newObject();
+
+				userJson.put("accountId", user.accountId);
+				userJson.put("accPriority", user.accPriority);
+				userJson.put("description", user.description);
+				userJson.put("purpose", user.purpose);
+
+				array.add(userJson);
+			}
+			
+			httpStatus.put("Code", "200");
+			httpStatus.put("status", "Success");
+			httpStatus.put("response", array);
+			
+			return ok(httpStatus);
+		}
+
+	}
+
+	public static Result showJson(Long id) {
+		ObjectNode httpStatus = Json.newObject();
+		PaymentPurpose user = PaymentPurpose.find.byId(id);
+		if (user.purposeId > 0) {
+			ObjectNode userJson = Json.newObject();
+
+			userJson.put("accountId", user.accountId);
+			userJson.put("accPriority", user.accPriority);
+			userJson.put("description", user.description);
+			userJson.put("purpose", user.purpose);
+
+			
+			httpStatus.put("Code", "200");
+			httpStatus.put("status", "Success");
+			httpStatus.put("response", userJson);
+			
+			return ok(httpStatus);
+		} else {
+			ObjectNode userJson = Json.newObject();
+
+			userJson.put("status", "No data");
+
+			httpStatus.put("Code", "401");
+			httpStatus.put("status", "Bad request");
+			httpStatus.put("response", userJson);
+			
+
+			return badRequest(httpStatus);
+		}
+
+	}
+
+	@BodyParser.Of(BodyParser.Json.class)
+	public static Result createPaymentPurposeJson() {
+		ObjectNode httpStatus = Json.newObject();
+		JsonNode asJson = request().body().asJson();
+
+		if (asJson.isNull()) {
+			ObjectNode userJson = Json.newObject();
+			userJson.put("status", "No data");
+
+			httpStatus.put("Code", "401");
+			httpStatus.put("status", "Bad request");
+			httpStatus.put("response", userJson);
+			
+			return badRequest(httpStatus);
+		} else {
+			Form<PaymentPurpose> contactForm = Form.form(PaymentPurpose.class).bind(asJson);
+			if (contactForm.hasErrors()) {
+
+				httpStatus.put("Code", "401");
+				httpStatus.put("status", "Bad request");
+				httpStatus.put("response", contactForm.errorsAsJson());
+				
+				return badRequest(httpStatus);
+			} else {
+				ObjectNode userJson = Json.newObject();
+				PaymentPurpose PaymentPurpose = new PaymentPurpose();
+
+				PaymentPurpose.accountId = asJson.findPath("accountId").longValue();
+				PaymentPurpose.accPriority = asJson.findPath("accPriority").textValue();
+				PaymentPurpose.description = asJson.findPath("description").textValue();
+				PaymentPurpose.purpose = asJson.findPath("purpose").textValue();
+
+				// save the user account
+				try {
+					PaymentPurpose.save();
+
+					userJson.put("status", "saved");
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					userJson.put("status", e.getMessage());
+				}
+				
+				httpStatus.put("Code", "200");
+				httpStatus.put("status", "Success");
+				httpStatus.put("response", userJson);
+				
+				return ok(httpStatus);
+			}
+		}
+
+	}
+
+	@BodyParser.Of(BodyParser.Json.class)
+	public static Result updatePaymentPurposeJson() {
+		ObjectNode httpStatus = Json.newObject();
+		JsonNode asJson = request().body().asJson();
+
+		if (asJson.isNull()) {
+			ObjectNode userJson = Json.newObject();
+			userJson.put("status", "No data");
+
+			httpStatus.put("Code", "401");
+			httpStatus.put("status", "Bad request");
+			httpStatus.put("response", userJson);
+			
+			return badRequest(httpStatus);
+		} else {
+			Form<PaymentPurpose> contactForm = Form.form(PaymentPurpose.class).bind(asJson);
+			if (contactForm.hasErrors()) {
+
+				httpStatus.put("Code", "401");
+				httpStatus.put("status", "Bad request");
+				httpStatus.put("response", contactForm.errorsAsJson());
+				
+				return badRequest(httpStatus);
+			} else {
+				ObjectNode userJson = Json.newObject();
+
+				PaymentPurpose paymentPurpose = PaymentPurpose.find.byId(asJson.findPath("purposeId").longValue());
+
+				paymentPurpose.accountId = asJson.findPath("accountId").longValue();
+				paymentPurpose.accPriority = asJson.findPath("accPriority").textValue();
+				paymentPurpose.description = asJson.findPath("description").textValue();
+				paymentPurpose.purpose = asJson.findPath("purpose").textValue();
+
+				// save the user account
+				try {
+					paymentPurpose.update();
+
+					userJson.put("status", "updated");
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					userJson.put("status", e.getMessage());
+				}
+				
+				httpStatus.put("Code", "200");
+				httpStatus.put("status", "Success");
+				httpStatus.put("response", userJson);
+				
+				return ok(httpStatus);
+			}
+		}
+
+	}
+
+	@BodyParser.Of(BodyParser.Json.class)
+	public static Result deletePaymentPurposeJson() {
+		ObjectNode httpStatus = Json.newObject();
+		JsonNode asJson = request().body().asJson();
+
+		if (asJson.isNull()) {
+			ObjectNode userJson = Json.newObject();
+			userJson.put("status", "No data");
+
+			httpStatus.put("Code", "401");
+			httpStatus.put("status", "Bad request");
+			httpStatus.put("response", userJson);
+			
+			return badRequest(httpStatus);
+		} else {
+			ObjectNode userJson = Json.newObject();
+
+			PaymentPurpose paymentPurpose = PaymentPurpose.find.byId(asJson.findPath("purposeId").longValue());
+			// save the user account
+			try {
+				paymentPurpose.delete();
+
+				userJson.put("status", "updated");
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				userJson.put("status", e.getMessage());
+			}
+			
+			httpStatus.put("Code", "200");
+			httpStatus.put("status", "Success");
+			httpStatus.put("response", userJson);
+			
+			return ok(httpStatus);
+		}
+
+	}
+
+}

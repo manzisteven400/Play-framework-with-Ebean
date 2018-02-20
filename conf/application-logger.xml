@@ -1,0 +1,44 @@
+<configuration>
+	<appender name="FILE" class="ch.qos.logback.core.FileAppender">
+	    <file>${application.home}/logs/application.log</file>
+		<encoder>
+			<pattern>
+				%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %logger{36} - %msg%n
+			</pattern>
+		</encoder>
+	</appender>
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%d -  [%thread] - %logger - %X{method} - %message%n%xException</pattern>
+		</encoder>
+	</appender>
+	
+	<appender name="ASYNCFILE" class="ch.qos.logback.classic.AsyncAppender">
+	    <appender-ref ref="FILE" />
+	</appender>
+	
+	<appender name="ASYNCSTDOUT" class="ch.qos.logback.classic.AsyncAppender">
+		<appender-ref ref="STDOUT" />
+	</appender>
+	
+<!-- 	<logger name="org.apache" level="INFO"></logger> -->
+	<root level="ERROR">
+    <appender-ref ref="STDOUT" />
+  </root>
+
+	<logger name="play" level="INFO" />
+	<logger name="application" level="INFO" />
+	<logger name="com" level="DEBUG" />
+	
+	<!-- Off these ones as they are annoying, and anyway we manage configuration ourself -->
+	<logger name="com.ning.http.client" level="OFF" />
+	<logger name="com.avaje.ebean.config.PropertyMapLoader" level="OFF" />
+	<logger name="com.avaje.ebeaninternal.server.core.XmlConfigLoader" level="OFF" />
+	<logger name="com.avaje.ebeaninternal.server.lib.BackgroundThread" level="OFF" />
+	<logger name="com.gargoylesoftware.htmlunit.javascript" level="OFF" />
+	
+	<root level="ERROR">
+		<appender-ref ref="STDOUT" />
+		<appender-ref ref="ASYNCFILE" />
+	</root>
+</configuration>

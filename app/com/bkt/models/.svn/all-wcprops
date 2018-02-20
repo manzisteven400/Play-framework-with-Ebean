@@ -1,0 +1,77 @@
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/urubuto-universities/!svn/ver/4/university/app/com/bkt/models
+END
+UserAccountArchive.java
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svn/urubuto-universities/!svn/ver/4/university/app/com/bkt/models/UserAccountArchive.java
+END
+PaymentLog.java
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/urubuto-universities/!svn/ver/5/university/app/com/bkt/models/PaymentLog.java
+END
+UserProfile.java
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/urubuto-universities/!svn/ver/4/university/app/com/bkt/models/UserProfile.java
+END
+Bank.java
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/urubuto-universities/!svn/ver/5/university/app/com/bkt/models/Bank.java
+END
+Student.java
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/urubuto-universities/!svn/ver/7/university/app/com/bkt/models/Student.java
+END
+Institution.java
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/urubuto-universities/!svn/ver/5/university/app/com/bkt/models/Institution.java
+END
+PaymentPurpose.java
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svn/urubuto-universities/!svn/ver/4/university/app/com/bkt/models/PaymentPurpose.java
+END
+ProfilePrivilege.java
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/urubuto-universities/!svn/ver/4/university/app/com/bkt/models/ProfilePrivilege.java
+END
+UserPrivilege.java
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/urubuto-universities/!svn/ver/4/university/app/com/bkt/models/UserPrivilege.java
+END
+Faculty.java
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/urubuto-universities/!svn/ver/4/university/app/com/bkt/models/Faculty.java
+END
+UserAccount.java
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/urubuto-universities/!svn/ver/5/university/app/com/bkt/models/UserAccount.java
+END
+BankAccount.java
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/urubuto-universities/!svn/ver/5/university/app/com/bkt/models/BankAccount.java
+END

@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/urubuto-universities/!svn/ver/3/university
+END
+build.sbt
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/urubuto-universities/!svn/ver/5/university/build.sbt
+END
+.gitignore
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/urubuto-universities/!svn/ver/4/university/.gitignore
+END
+.project
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/urubuto-universities/!svn/ver/4/university/.project
+END
+README
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/urubuto-universities/!svn/ver/4/university/README
+END
+.classpath
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/urubuto-universities/!svn/ver/4/university/.classpath
+END

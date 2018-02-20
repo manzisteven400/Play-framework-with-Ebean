@@ -1,0 +1,41 @@
+/**
+ * 
+ */
+package com.bkt.models;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+
+import play.data.validation.Constraints.Required;
+import play.db.ebean.Model;
+
+/**
+ * @author pc
+ *
+ */
+@Entity
+public class PaymentPurpose extends Model {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	@Id
+	@GeneratedValue
+	public Long purposeId;
+	
+	@Required
+	public Long accountId;
+
+	@Required
+	public String purpose;
+	
+	public String description;
+
+	@Required
+	public String accPriority;
+	
+	public static Finder<Long, PaymentPurpose> find=new Finder<Long,PaymentPurpose>(Long.class, PaymentPurpose.class);
+	
+}
