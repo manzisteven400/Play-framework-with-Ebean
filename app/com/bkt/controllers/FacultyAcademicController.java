@@ -285,8 +285,8 @@ public class FacultyAcademicController extends Controller {
 
 				// save the user account
 				try {
+					
 					bank.update();
-
 					userJson.put("status", "updated");
 					httpStatus.put("Code", "200");
 					httpStatus.put("status", "success");
@@ -307,7 +307,6 @@ public class FacultyAcademicController extends Controller {
 		}
 
 	}
-
 	@BodyParser.Of(BodyParser.Json.class)
 	public static Result deleteRecord() {
 		JsonNode asJson = request().body().asJson();
@@ -330,9 +329,7 @@ public class FacultyAcademicController extends Controller {
 			// save the user account
 			try {
 				bank.delete();
-
 				userJson.put("status", "updated");
-
 				httpStatus.put("Code", "200");
 				httpStatus.put("status", "success");
 				httpStatus.put("response", userJson);
@@ -340,13 +337,11 @@ public class FacultyAcademicController extends Controller {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				userJson.put("status", e.getMessage());
-
 				httpStatus.put("Code", "500");
 				httpStatus.put("status", "Internal Error");
 				httpStatus.put("response", userJson);
 			}
 			return ok(httpStatus);
 		}
-
 	}
 }

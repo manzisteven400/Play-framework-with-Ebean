@@ -46,6 +46,7 @@ GET      /bankAccs/:id                           com.bkt.controllers.BankAccount
 GET      /bankAccs/paging/:startNum/:endNum      com.bkt.controllers.BankAccountController.allByPaging(startNum:Long,endNum:Long)
 GET      /bankAccs/institute/paging/:instId/:startNum/:endNum      com.bkt.controllers.BankAccountController.allByInstIdPaging(instId:Long, startNum:Long,endNum:Long)
 GET      /bankAccs/institute/:id                           com.bkt.controllers.BankAccountController.listByInstIdJson(id :Long)
+
 #GET      /bankAccs/institute/bank/:instId/:bankId           com.bkt.controllers.BankAccountController.showJson(id :Long)
 POST     /createBankAcc                         com.bkt.controllers.BankAccountController.createBankAccountJson()
 POST     /deleteBankAcc                           com.bkt.controllers.BankAccountController.deleteBankAccountJson()
@@ -89,6 +90,15 @@ POST     /registeredCreatePaymentLog                         com.bkt.controllers
 POST     /deletePaymentLog                           com.bkt.controllers.PaymentLogController.deletePaymentLongJson()
 POST     /updatePaymentLog                           com.bkt.controllers.PaymentLogController.updatePaymentLongJson()
 
+#Cancelled transactions
+GET      /paymentlogs/cancelledByInstIdPaging/:instId/:startNum/:endNum                 com.bkt.controllers.PaymentLogController.allCancelledByInstIdPaging(instId:Long, startNum:Long,endNum:Long)
+GET      /paymentlogs/cancelledByInstIdAndYearPaging/:instId/:year/:startNum/:endNum                 com.bkt.controllers.PaymentLogController.allCancelledByInstIdAndYearPaging(instId:Long,year:String,startNum:Long,endNum:Long)
+GET      /paymentlogs/cancelledByInstIdAndFacultyIdPaging/:instId/:year/:facultyId/:startNum/:endNum                 com.bkt.controllers.PaymentLogController.allCancelledByInstIdAndYearAndFacultyIdPaging(instId:Long,year:String,facultyId:Long,startNum:Long,endNum:Long)
+GET      /paymentlogs/cancelledByInstIdAndYearAndRegNumberPaging/:instId/:year/:regNumber/:startNum/:endNum                 com.bkt.controllers.PaymentLogController.allCancelledByInstIdAndYearAndRegNumberPaging(instId:Long,year:String,regNumber:String,startNum:Long,endNum:Long)
+GET      /paymentlogs/noneregistered/cancelledByInstIdAndYearPaging/:instId/:year/:startNum/:endNum                 com.bkt.controllers.PaymentLogController.allCancelledNoneRegisteredByInstIdAndYearPaging(instId:Long,year:String, startNum:Long,endNum:Long)
+GET      /paymentLogs/institute/cancelled/unregistered/paging/:instId/:startNum/:endNum      com.bkt.controllers.PaymentLogController.allCancelledUnRegisteredByInstIdPaging(instId:Long, startNum:Long,endNum:Long)
+
+
 # Payment Log from registered students  
 GET      /paymentlogs/noneregistered/searchByInstIdAndYearPaging/:instId/:year/:startNum/:endNum                 com.bkt.controllers.PaymentLogController.allNoneRegisteredByInstIdAndYearPaging(instId:Long,year:String, startNum:Long,endNum:Long)
 GET      /payments/allfromunregistered/institute/:instId                           com.bkt.controllers.PaymentLogController.searchAllUnRegisteredByInsistId(instId :Long)
@@ -102,6 +112,7 @@ POST     /unRegisteredCreatePaymentLog                         com.bkt.controlle
 GET      /paymentlogs/statsByYear/:instID/:year                           com.bkt.controllers.PaymentLogController.paymentStatByYear(instID :Long,year: String)
 GET      /paymentlogs/statsByYear/studentgrouped/:instID/:year                           com.bkt.controllers.PaymentLogController.paymentStatGroupByStudentPerYear(instID :Long,year: String)
 GET      /paymentlogs/statsByYear/purposegrouped/:instID/:year                           com.bkt.controllers.PaymentLogController.paymentStatGroupByPurposePerYear(instID :Long,year: String)
+GET      /paymentlogs/statsByYear/studentgrouped/paymentstatus/:instID/:year/:choice                           com.bkt.controllers.PaymentLogController.partialPaymentStatusGroupByStudentPerYear(instID :Long,year: String, choice: Integer)
 
 # User accounts
 GET      /userAccounts                          com.bkt.controllers.UserController.listJson()

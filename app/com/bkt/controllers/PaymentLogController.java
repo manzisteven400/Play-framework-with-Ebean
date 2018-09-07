@@ -22,6 +22,7 @@ import com.bkt.models.Student;
 import com.bkt.utils.HelperManager;
 import com.bkt.utils.LogRequest;
 import com.bkt.utils.PaymentLogUtils;
+import com.bkt.utils.USSDHelperUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -822,6 +823,20 @@ public class PaymentLogController extends Controller {
 
 		httpStatus.put("Code", "200");
 		return ok(httpStatus);
+	}public static Result partialPaymentStatusGroupByStudentPerYear(Long instId,String year,int choice) {
+		long academicYear = 0;
+		try {
+			academicYear = InstitutionCalender.find.where().eq("academic_year", year.trim()).eq("institution_id", instId).findUnique().id;
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		LOG.info("Adacemic year Id..."+academicYear);
+		JsonNode totStdPayment = PaymentLogUtils.sumOfPartialPaymentsByStudentPerInstIdAndYear(instId, academicYear, "yes",choice);
+		
+
+		return ok(totStdPayment);
 	}public static Result paymentStatGroupByStudentPerYear(Long instId,String year) {
 		long academicYear = 0;
 		try {
@@ -973,8 +988,17 @@ public class PaymentLogController extends Controller {
 		ObjectNode httpStatus = Json.newObject();
 		
 		Long academicYear = Long.parseLong("0");
+		ObjectNode academicYearJson=Json.newObject();
+		
 		try {
-			academicYear = InstitutionCalender.find.where().eq("academic_year", year).eq("institution_id", instId).findUnique().id;
+			InstitutionCalender academicUnique = InstitutionCalender.find.where().eq("academic_year", year).eq("institution_id", instId).findUnique();
+			academicYear =academicUnique.id;
+		
+			academicYearJson.put("academicYear", academicUnique.academicYear);
+			academicYearJson.put("endDate", academicUnique.endDate);
+			academicYearJson.put("startDate", academicUnique.startDate);
+			academicYearJson.put("batchCode", academicUnique.batchCode);
+			academicYearJson.put("id", academicUnique.id);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -986,6 +1010,373 @@ public class PaymentLogController extends Controller {
 				.eq("ussd_status","success")
 				.eq("is_registered", "yes")
 				.eq("institution_calender_id", academicYear)
+				.eq("institution_id", instId).order("id desc").findPagingList(pageMax.intValue())
+				.setFetchAhead(false).getPage(pageNum.intValue());
+
+		// fetch and return the list
+		List<PaymentLog> allPayents = pagedList.getList();
+
+		// get the total row count (from the future)
+		int totalRowCount = pagedList.getTotalRowCount();
+		
+		
+		if (allPayents.isEmpty()) {
+			ObjectNode pymtLongJson = Json.newObject();
+
+			pymtLongJson.put("status", "No data");
+
+			httpStatus.put("Code", "401");
+			httpStatus.put("rowCount", 0);
+			httpStatus.put("status", "Bad request");
+			httpStatus.put("response", pymtLongJson);
+			
+			return badRequest(httpStatus);
+		} else {
+			ObjectNode respJson = Json.newObject();
+
+			respJson.put("rowCount", totalRowCount);
+			
+			ObjectNode pymtLongJson;
+			ObjectMapper mapper = new ObjectMapper();
+			ArrayNode array = mapper.createArrayNode();
+			for (PaymentLog user : allPayents) {
+				
+				pymtLongJson = Json.newObject();
+
+				pymtLongJson.put("accountNumber", user.bankAcc.accountNumber);
+				pymtLongJson.put("paymentPurpose", user.paymentPurpose.purpose);
+				pymtLongJson.put("amountPaid", user.amountPaid);
+				pymtLongJson.put("extTrxId", user.extTrxId);
+
+				pymtLongJson.put("academicYear", user.extTrxId);
+				
+				pymtLongJson.put("instId", user.instId.id);
+				pymtLongJson.put("bankSlip", user.bankSlip);
+				pymtLongJson.put("paymentChannel", user.paymentChannel);
+				pymtLongJson.put("paymentDevice", user.paymentDevice);
+				pymtLongJson.put("processingNumber", user.processingNumber);
+				pymtLongJson.put("paymentDate", HelperManager.converDateFormat(user.paymentDate));
+				pymtLongJson.put("postingDate", HelperManager.converDateFormat(user.postingDate));
+				try {
+					if(user.academicYear.id>0){
+						pymtLongJson.put("academicYearObject", academicYearJson);
+					}else{
+						pymtLongJson.put("academicYearObject", academicYearJson);
+					}
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				pymtLongJson.put("paymentId", user.id);
+				
+				//get student by student id
+				ObjectNode studentJson = Json.newObject();
+				Student myStudent=Student.find.byId(user.studentId.id);
+				Faculty myFaculty;
+				try {
+					myFaculty = Faculty.find.byId(myStudent.facultyId.id);
+					studentJson.put("faculty", myFaculty.name);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				studentJson.put("firstName", myStudent.firstName);
+				studentJson.put("lastName", myStudent.lastName);
+				studentJson.put("regNumber", myStudent.regNumber);
+				studentJson.put("studentId", myStudent.id);
+				try {
+					if(myStudent.degreeProgram.id>0){
+						studentJson.put("degreeProgram", myStudent.degreeProgram.degreeName);
+					}else{
+						studentJson.put("noneDegreeProgram", myStudent.noneDegreeProgram.degreeName);
+					}
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				pymtLongJson.put("student", studentJson);
+				
+				array.add(pymtLongJson);
+			}
+
+			httpStatus.put("rowCount", totalRowCount);
+			httpStatus.put("Code", "200");
+			httpStatus.put("status", "Success");
+			httpStatus.put("response", array);
+			
+			return ok(httpStatus);
+		}
+
+	}
+	
+	/*
+	 * Display all paymentLogs from registered 
+	 * students only by institution id and payment year and faculty id with paging
+	 *
+	 * */
+	public static Result allByInstIdAndYearAndFacultyIdPaging(Long instId,String year,Long facultyId, Long pageNum, Long pageMax) {
+		ObjectNode httpStatus = Json.newObject();
+		
+		Long academicYear = Long.parseLong("0");
+		ObjectNode academicYearJson=Json.newObject();
+		
+		try {
+			InstitutionCalender academicUnique = InstitutionCalender.find.where().eq("academic_year", year).eq("institution_id", instId).findUnique();
+			academicYear =academicUnique.id;
+		
+			academicYearJson.put("academicYear", academicUnique.academicYear);
+			academicYearJson.put("endDate", academicUnique.endDate);
+			academicYearJson.put("startDate", academicUnique.startDate);
+			academicYearJson.put("batchCode", academicUnique.batchCode);
+			academicYearJson.put("id", academicUnique.id);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// Paging starts
+		Page<PaymentLog> pagedList = PaymentLog.find.where()
+				.eq("status_desc","posted")
+				.eq("ussd_status","success")
+				.eq("is_registered", "yes")
+				.eq("institution_calender_id", academicYear)
+				.eq("faculty_id", facultyId).order("id desc").findPagingList(pageMax.intValue())
+				.setFetchAhead(false).getPage(pageNum.intValue());
+
+		// fetch and return the list
+		List<PaymentLog> allPayents = pagedList.getList();
+
+		// get the total row count (from the future)
+		int totalRowCount = pagedList.getTotalRowCount();
+		
+		
+		if (allPayents.isEmpty()) {
+			ObjectNode pymtLongJson = Json.newObject();
+
+			pymtLongJson.put("status", "No data");
+
+			httpStatus.put("Code", "401");
+			httpStatus.put("rowCount", 0);
+			httpStatus.put("status", "Bad request");
+			httpStatus.put("response", pymtLongJson);
+			
+			return badRequest(httpStatus);
+		} else {
+			ObjectNode respJson = Json.newObject();
+
+			respJson.put("rowCount", totalRowCount);
+			
+			ObjectNode pymtLongJson;
+			ObjectMapper mapper = new ObjectMapper();
+			ArrayNode array = mapper.createArrayNode();
+			for (PaymentLog user : allPayents) {
+				
+				pymtLongJson = Json.newObject();
+
+				pymtLongJson.put("accountNumber", user.bankAcc.accountNumber);
+				pymtLongJson.put("paymentPurpose", user.paymentPurpose.purpose);
+				pymtLongJson.put("amountPaid", user.amountPaid);
+				pymtLongJson.put("extTrxId", user.extTrxId);
+				pymtLongJson.put("instId", user.instId.id);
+				pymtLongJson.put("bankSlip", user.bankSlip);
+				pymtLongJson.put("paymentChannel", user.paymentChannel);
+				pymtLongJson.put("paymentDevice", user.paymentDevice);
+				pymtLongJson.put("processingNumber", user.processingNumber);
+				try {
+					if(user.academicYear.id>0){
+						pymtLongJson.put("academicYearObject", academicYearJson);
+					}else{
+						pymtLongJson.put("academicYearObject", academicYearJson);
+					}
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				pymtLongJson.put("paymentDate", HelperManager.converDateFormat(user.paymentDate));
+				pymtLongJson.put("postingDate", HelperManager.converDateFormat(user.postingDate));
+				
+				pymtLongJson.put("paymentId", user.id);
+				
+				//get student by student id
+				ObjectNode studentJson = Json.newObject();
+				Student myStudent=Student.find.byId(user.studentId.id);
+				Faculty myFaculty;
+				try {
+					myFaculty = Faculty.find.byId(myStudent.facultyId.id);
+					studentJson.put("faculty", myFaculty.name);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				studentJson.put("firstName", myStudent.firstName);
+				studentJson.put("lastName", myStudent.lastName);
+				studentJson.put("regNumber", myStudent.regNumber);
+				studentJson.put("studentId", myStudent.id);
+				try {
+					if(myStudent.degreeProgram.id>0){
+						studentJson.put("degreeProgram", myStudent.degreeProgram.degreeName);
+					}else{
+						studentJson.put("noneDegreeProgram", myStudent.noneDegreeProgram.degreeName);
+					}
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				pymtLongJson.put("student", studentJson);
+				
+				array.add(pymtLongJson);
+			}
+
+			httpStatus.put("rowCount", totalRowCount);
+			httpStatus.put("Code", "200");
+			httpStatus.put("status", "Success");
+			httpStatus.put("response", array);
+			
+			return ok(httpStatus);
+		}
+
+	}
+	/*
+	 * Display all paymentLogs from registered 
+	 * students only by institution id and payment year and registration number with paging
+	 *
+	 * */
+	public static Result allByInstIdAndYearAndRegNumberPaging(Long instId,String year,String regNumber, Long pageNum, Long pageMax) {
+		ObjectNode httpStatus = Json.newObject();
+		Long academicYear = Long.parseLong("0");
+		ObjectNode academicYearJson=Json.newObject();
+		
+		try {
+			InstitutionCalender academicUnique = InstitutionCalender.find.where().eq("academic_year", year).eq("institution_id", instId).findUnique();
+			academicYear =academicUnique.id;
+		
+			academicYearJson.put("academicYear", academicUnique.academicYear);
+			academicYearJson.put("endDate", academicUnique.endDate);
+			academicYearJson.put("startDate", academicUnique.startDate);
+			academicYearJson.put("batchCode", academicUnique.batchCode);
+			academicYearJson.put("id", academicUnique.id);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		// Paging starts
+		Page<PaymentLog> pagedList = PaymentLog.find.where()
+				.eq("status_desc","posted")
+				.eq("ussd_status","success")
+				.eq("is_registered", "yes")
+				.eq("institution_calender_id", academicYear)
+				.eq("student_id", Student.find.where().eq("reg_number", regNumber).findUnique().id).order("id desc").findPagingList(pageMax.intValue())
+				.setFetchAhead(false).getPage(pageNum.intValue());
+
+		// fetch and return the list
+		List<PaymentLog> allPayents = pagedList.getList();
+
+		// get the total row count (from the future)
+		int totalRowCount = pagedList.getTotalRowCount();
+		
+		
+		if (allPayents.isEmpty()) {
+			ObjectNode pymtLongJson = Json.newObject();
+
+			pymtLongJson.put("status", "No data");
+
+			httpStatus.put("Code", "401");
+			httpStatus.put("rowCount", 0);
+			httpStatus.put("status", "Bad request");
+			httpStatus.put("response", pymtLongJson);
+			
+			return badRequest(httpStatus);
+		} else {
+			ObjectNode respJson = Json.newObject();
+
+			respJson.put("rowCount", totalRowCount);
+			
+			ObjectNode pymtLongJson;
+			ObjectMapper mapper = new ObjectMapper();
+			ArrayNode array = mapper.createArrayNode();
+			for (PaymentLog user : allPayents) {
+				
+				pymtLongJson = Json.newObject();
+
+				pymtLongJson.put("accountNumber", user.bankAcc.accountNumber);
+				pymtLongJson.put("paymentPurpose", user.paymentPurpose.purpose);
+				pymtLongJson.put("amountPaid", user.amountPaid);
+				pymtLongJson.put("extTrxId", user.extTrxId);
+				pymtLongJson.put("instId", user.instId.id);
+				pymtLongJson.put("bankSlip", user.bankSlip);
+				pymtLongJson.put("paymentChannel", user.paymentChannel);
+				pymtLongJson.put("paymentDevice", user.paymentDevice);
+				pymtLongJson.put("processingNumber", user.processingNumber);
+				try {
+					if(user.academicYear.id>0){
+						pymtLongJson.put("academicYearObject", academicYearJson);
+					}else{
+						pymtLongJson.put("academicYearObject", academicYearJson);
+					}
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				pymtLongJson.put("paymentDate", HelperManager.converDateFormat(user.paymentDate));
+				pymtLongJson.put("postingDate", HelperManager.converDateFormat(user.postingDate));
+				
+				pymtLongJson.put("paymentId", user.id);
+				
+				//get student by student id
+				ObjectNode studentJson = Json.newObject();
+				Student myStudent=Student.find.byId(user.studentId.id);
+				Faculty myFaculty;
+				try {
+					myFaculty = Faculty.find.byId(myStudent.facultyId.id);
+					studentJson.put("faculty", myFaculty.name);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				studentJson.put("firstName", myStudent.firstName);
+				studentJson.put("lastName", myStudent.lastName);
+				studentJson.put("regNumber", myStudent.regNumber);
+				studentJson.put("studentId", myStudent.id);
+				try {
+					if(myStudent.degreeProgram.id>0){
+						studentJson.put("degreeProgram", myStudent.degreeProgram.degreeName);
+					}else{
+						studentJson.put("noneDegreeProgram", myStudent.noneDegreeProgram.degreeName);
+					}
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				pymtLongJson.put("student", studentJson);
+				
+				array.add(pymtLongJson);
+			}
+
+			httpStatus.put("rowCount", totalRowCount);
+			httpStatus.put("Code", "200");
+			httpStatus.put("status", "Success");
+			httpStatus.put("response", array);
+			
+			return ok(httpStatus);
+		}
+
+	}
+	
+	//cancelled transactions
+	/*
+	 * Display all paymentLogs from registered 
+	 * students only by institution id
+	 *
+	 * */
+	public static Result allCancelledByInstIdPaging(Long instId, Long pageNum, Long pageMax) {
+		ObjectNode httpStatus = Json.newObject();
+		
+		
+		// Paging starts
+		Page<PaymentLog> pagedList = PaymentLog.find.where()
+				.eq("status_desc","CANCELLED")
+				.eq("ussd_status","CANCELLED")
+				.eq("is_registered", "yes")
 				.eq("institution_id", instId).order("id desc").findPagingList(pageMax.intValue())
 				.setFetchAhead(false).getPage(pageNum.intValue());
 
@@ -1053,10 +1444,146 @@ public class PaymentLogController extends Controller {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+				
 				studentJson.put("firstName", myStudent.firstName);
 				studentJson.put("lastName", myStudent.lastName);
 				studentJson.put("regNumber", myStudent.regNumber);
 				studentJson.put("studentId", myStudent.id);
+				
+				try {
+					if(myStudent.degreeProgram.id>0){
+						studentJson.put("degreeProgram", myStudent.degreeProgram.degreeName);
+					}else{
+						studentJson.put("noneDegreeProgram", myStudent.noneDegreeProgram.degreeName);
+					}
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				pymtLongJson.put("student", studentJson);
+				
+				array.add(pymtLongJson);
+			}
+
+			httpStatus.put("rowCount", totalRowCount);
+			httpStatus.put("Code", "200");
+			httpStatus.put("status", "Success");
+			httpStatus.put("response", array);
+			
+			return ok(httpStatus);
+		}
+
+	}
+	
+	/*
+	 * Display all paymentLogs from registered 
+	 * students only by institution id and payment year with paging
+	 *
+	 */
+	public static Result allCancelledByInstIdAndYearPaging(Long instId,String year, Long pageNum, Long pageMax) {
+		ObjectNode httpStatus = Json.newObject();
+		
+		Long academicYear = Long.parseLong("0");
+		ObjectNode academicYearJson=Json.newObject();
+		
+		try {
+			InstitutionCalender academicUnique = InstitutionCalender.find.where().eq("academic_year", year).eq("institution_id", instId).findUnique();
+			academicYear =academicUnique.id;
+		
+			academicYearJson.put("academicYear", academicUnique.academicYear);
+			academicYearJson.put("endDate", academicUnique.endDate);
+			academicYearJson.put("startDate", academicUnique.startDate);
+			academicYearJson.put("batchCode", academicUnique.batchCode);
+			academicYearJson.put("id", academicUnique.id);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		// Paging starts
+		Page<PaymentLog> pagedList = PaymentLog.find.where()
+				.eq("status_desc","CANCELLED")
+				.eq("ussd_status","CANCELLED")
+				.eq("is_registered", "yes")
+				.eq("institution_calender_id", academicYear)
+				.eq("institution_id", instId)
+				.order("id desc").findPagingList(pageMax.intValue())
+				.setFetchAhead(true).getPage(pageNum.intValue());
+
+		// fetch and return the list
+		List<PaymentLog> allPayents = pagedList.getList();
+
+		// get the total row count (from the future)
+		int totalRowCount = pagedList.getTotalRowCount();
+		
+		
+		if (allPayents.isEmpty()) {
+			ObjectNode pymtLongJson = Json.newObject();
+
+			pymtLongJson.put("status", "No data");
+
+			httpStatus.put("Code", "401");
+			httpStatus.put("rowCount", 0);
+			httpStatus.put("status", "Bad request");
+			httpStatus.put("response", pymtLongJson);
+			
+			return badRequest(httpStatus);
+		} else {
+			ObjectNode respJson = Json.newObject();
+
+			respJson.put("rowCount", totalRowCount);
+			
+			ObjectNode pymtLongJson;
+			ObjectMapper mapper = new ObjectMapper();
+			ArrayNode array = mapper.createArrayNode();
+			for (PaymentLog user : allPayents) {
+				
+				pymtLongJson = Json.newObject();
+
+				pymtLongJson.put("accountNumber", user.bankAcc.accountNumber);
+				pymtLongJson.put("paymentPurpose", user.paymentPurpose.purpose);
+				pymtLongJson.put("amountPaid", user.amountPaid);
+				pymtLongJson.put("extTrxId", user.extTrxId);
+				pymtLongJson.put("instId", user.instId.id);
+				pymtLongJson.put("bankSlip", user.bankSlip);
+				pymtLongJson.put("paymentChannel", user.paymentChannel);
+				pymtLongJson.put("paymentDevice", user.paymentDevice);
+				pymtLongJson.put("processingNumber", user.processingNumber);
+				pymtLongJson.put("paymentDate", HelperManager.converDateFormat(user.paymentDate));
+				pymtLongJson.put("postingDate", HelperManager.converDateFormat(user.postingDate));
+				try {
+					if(user.academicYear.id>0){
+						pymtLongJson.put("academicYear", user.academicYear.academicYear);
+					}else{
+						pymtLongJson.put("academicYear", 0);
+					}
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				pymtLongJson.put("paymentId", user.id);
+				
+				//get student by student id
+				ObjectNode studentJson = Json.newObject();
+				Student myStudent=Student.find.byId(user.studentId.id);
+				Faculty myFaculty;
+				try {
+					myFaculty = Faculty.find.byId(myStudent.facultyId.id);
+					studentJson.put("faculty", myFaculty.name);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					//e.printStackTrace();
+				}
+				try {
+					studentJson.put("firstName", myStudent.firstName);
+					studentJson.put("lastName", myStudent.lastName);
+					studentJson.put("regNumber", myStudent.regNumber);
+					studentJson.put("studentId", myStudent.id);
+				} catch (Exception e1) {
+					// TODO Auto-generated catch block
+					//e1.printStackTrace();
+				}
+				
 				try {
 					if(myStudent.degreeProgram.id>0){
 						studentJson.put("degreeProgram", myStudent.degreeProgram.degreeName);
@@ -1087,24 +1614,33 @@ public class PaymentLogController extends Controller {
 	 * students only by institution id and payment year and faculty id with paging
 	 *
 	 * */
-	public static Result allByInstIdAndYearAndFacultyIdPaging(Long instId,String year,Long facultyId, Long pageNum, Long pageMax) {
+	public static Result allCancelledByInstIdAndYearAndFacultyIdPaging(Long instId,String year,Long facultyId, Long pageNum, Long pageMax) {
 		ObjectNode httpStatus = Json.newObject();
 		
 		Long academicYear = Long.parseLong("0");
+		ObjectNode academicYearJson=Json.newObject();
+		
 		try {
-			academicYear = InstitutionCalender.find.where().eq("academic_year", year).eq("institution_id", instId).findUnique().id;
+			InstitutionCalender academicUnique = InstitutionCalender.find.where().eq("academic_year", year).eq("institution_id", instId).findUnique();
+			academicYear =academicUnique.id;
+		
+			academicYearJson.put("academicYear", academicUnique.academicYear);
+			academicYearJson.put("endDate", academicUnique.endDate);
+			academicYearJson.put("startDate", academicUnique.startDate);
+			academicYearJson.put("batchCode", academicUnique.batchCode);
+			academicYearJson.put("id", academicUnique.id);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		// Paging starts
 		Page<PaymentLog> pagedList = PaymentLog.find.where()
-				.eq("status_desc","posted")
-				.eq("ussd_status","success")
+				.eq("status_desc","CANCELLED")
+				.eq("ussd_status","CANCELLED")
 				.eq("is_registered", "yes")
 				.eq("institution_calender_id", academicYear)
 				.eq("faculty_id", facultyId).order("id desc").findPagingList(pageMax.intValue())
-				.setFetchAhead(false).getPage(pageNum.intValue());
+				.setFetchAhead(true).getPage(pageNum.intValue());
 
 		// fetch and return the list
 		List<PaymentLog> allPayents = pagedList.getList();
@@ -1204,11 +1740,21 @@ public class PaymentLogController extends Controller {
 	 * students only by institution id and payment year and registration number with paging
 	 *
 	 * */
-	public static Result allByInstIdAndYearAndRegNumberPaging(Long instId,String year,String regNumber, Long pageNum, Long pageMax) {
+	public static Result allCancelledByInstIdAndYearAndRegNumberPaging(Long instId,String year,String regNumber, Long pageNum, Long pageMax) {
 		ObjectNode httpStatus = Json.newObject();
 		Long academicYear = Long.parseLong("0");
+
+		ObjectNode academicYearJson=Json.newObject();
+		
 		try {
-			academicYear = InstitutionCalender.find.where().eq("academic_year", year).eq("institution_id", instId).findUnique().id;
+			InstitutionCalender academicUnique = InstitutionCalender.find.where().eq("academic_year", year).eq("institution_id", instId).findUnique();
+			academicYear =academicUnique.id;
+		
+			academicYearJson.put("academicYear", academicUnique.academicYear);
+			academicYearJson.put("endDate", academicUnique.endDate);
+			academicYearJson.put("startDate", academicUnique.startDate);
+			academicYearJson.put("batchCode", academicUnique.batchCode);
+			academicYearJson.put("id", academicUnique.id);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -1216,12 +1762,12 @@ public class PaymentLogController extends Controller {
 		
 		// Paging starts
 		Page<PaymentLog> pagedList = PaymentLog.find.where()
-				.eq("status_desc","posted")
-				.eq("ussd_status","success")
+				.eq("status_desc","CANCELLED")
+				.eq("ussd_status","CANCELLED")
 				.eq("is_registered", "yes")
 				.eq("institution_calender_id", academicYear)
 				.eq("student_id", Student.find.where().eq("reg_number", regNumber).findUnique().id).order("id desc").findPagingList(pageMax.intValue())
-				.setFetchAhead(false).getPage(pageNum.intValue());
+				.setFetchAhead(true).getPage(pageNum.intValue());
 
 		// fetch and return the list
 		List<PaymentLog> allPayents = pagedList.getList();
@@ -1264,9 +1810,9 @@ public class PaymentLogController extends Controller {
 				pymtLongJson.put("processingNumber", user.processingNumber);
 				try {
 					if(user.academicYear.id>0){
-						pymtLongJson.put("academicYear", user.academicYear.academicYear);
+						pymtLongJson.put("academicYearObject", academicYearJson);
 					}else{
-						pymtLongJson.put("academicYear", 0);
+						pymtLongJson.put("academicYearObject", academicYearJson);
 					}
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
@@ -1316,7 +1862,8 @@ public class PaymentLogController extends Controller {
 		}
 
 	}
-
+	//cancelled transactions
+	
 	/*
 	 * PaymentLogs from registered 
 	 * students only by payment id
@@ -1484,6 +2031,12 @@ public class PaymentLogController extends Controller {
 									pymtLong.paymentDate = HelperManager.getDateToday();
 									pymtLong.postingDate = HelperManager.getDateToday();
 									pymtLong.paymentYear=HelperManager.getYearToday();
+									
+
+									pymtLong.batchCheckSum=USSDHelperUtils.getCheckSum();
+									pymtLong.logBankAccount=bankAcc.accountNumber;
+									pymtLong.studentRef=studentById.regNumber;
+									pymtLong.logged=0;
 									
 									pymtLong.save();
 
@@ -1747,8 +2300,18 @@ public class PaymentLogController extends Controller {
 	public static Result allNoneRegisteredByInstIdAndYearPaging(Long instId,String year, Long pageNum, Long pageMax) {
 		ObjectNode httpStatus = Json.newObject();
 		Long academicYear = Long.parseLong("0");
+
+		ObjectNode academicYearJson=Json.newObject();
+		
 		try {
-			academicYear = InstitutionCalender.find.where().eq("academic_year", year).eq("institution_id", instId).findUnique().id;
+			InstitutionCalender academicUnique = InstitutionCalender.find.where().eq("academic_year", year).eq("institution_id", instId).findUnique();
+			academicYear =academicUnique.id;
+		
+			academicYearJson.put("academicYear", academicUnique.academicYear);
+			academicYearJson.put("endDate", academicUnique.endDate);
+			academicYearJson.put("startDate", academicUnique.startDate);
+			academicYearJson.put("batchCode", academicUnique.batchCode);
+			academicYearJson.put("id", academicUnique.id);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -1805,9 +2368,9 @@ public class PaymentLogController extends Controller {
 
 				try {
 					if(user.academicYear.id>0){
-						pymtLongJson.put("academicYear", user.academicYear.academicYear);
+						pymtLongJson.put("academicYearObject", academicYearJson);
 					}else{
-						pymtLongJson.put("academicYear", 0);
+						pymtLongJson.put("academicYearObject", academicYearJson);
 					}
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
@@ -2451,6 +3014,199 @@ public class PaymentLogController extends Controller {
 			httpStatus.put("response", pymtLongJson);
 			
 			return badRequest(httpStatus);
+		}
+
+	}
+	//cancelled none registered transactions
+	/*
+	 * Display all paymentLogs from none registered 
+	 * students only by institution id and payment year with paging
+	 *
+	 * */
+	public static Result allCancelledNoneRegisteredByInstIdAndYearPaging(Long instId,String year, Long pageNum, Long pageMax) {
+		ObjectNode httpStatus = Json.newObject();
+		Long academicYear = Long.parseLong("0");
+
+		ObjectNode academicYearJson=Json.newObject();
+		
+		try {
+			InstitutionCalender academicUnique = InstitutionCalender.find.where().eq("academic_year", year).eq("institution_id", instId).findUnique();
+			academicYear =academicUnique.id;
+		
+			academicYearJson.put("academicYear", academicUnique.academicYear);
+			academicYearJson.put("endDate", academicUnique.endDate);
+			academicYearJson.put("startDate", academicUnique.startDate);
+			academicYearJson.put("batchCode", academicUnique.batchCode);
+			academicYearJson.put("id", academicUnique.id);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		// Paging starts
+		Page<PaymentLog> pagedList = PaymentLog.find.where()
+				.eq("status_desc","CANCELLED")
+				.eq("ussd_status","CANCELLED")
+				.eq("is_registered", "no").eq("institution_calender_id", academicYear).eq("institution_id", instId).order("id desc").findPagingList(pageMax.intValue())
+				.setFetchAhead(false).getPage(pageNum.intValue());
+
+		// fetch and return the list
+		List<PaymentLog> allPayents = pagedList.getList();
+
+		// get the total row count (from the future)
+		int totalRowCount = pagedList.getTotalRowCount();
+		
+		
+		if (allPayents.isEmpty()) {
+			ObjectNode pymtLongJson = Json.newObject();
+
+			pymtLongJson.put("status", "No data");
+
+			httpStatus.put("Code", "401");
+			httpStatus.put("rowCount", 0);
+			httpStatus.put("status", "Bad request");
+			httpStatus.put("response", pymtLongJson);
+			
+			return badRequest(httpStatus);
+		} else {
+			ObjectNode respJson = Json.newObject();
+
+			respJson.put("rowCount", totalRowCount);
+			
+			ObjectNode pymtLongJson;
+			ObjectMapper mapper = new ObjectMapper();
+			ArrayNode array = mapper.createArrayNode();
+			for (PaymentLog user : allPayents) {
+				
+				pymtLongJson = Json.newObject();
+
+				pymtLongJson.put("accountNumber", user.bankAcc.accountNumber);
+				pymtLongJson.put("paymentPurpose", user.paymentPurpose.purpose);
+				pymtLongJson.put("amountPaid", user.amountPaid);
+				pymtLongJson.put("extTrxId", user.extTrxId);
+				pymtLongJson.put("instId", user.instId.id);
+				pymtLongJson.put("bankSlip", user.bankSlip);
+				pymtLongJson.put("paymentChannel", user.paymentChannel);
+				pymtLongJson.put("paymentDevice", user.paymentDevice);
+				pymtLongJson.put("processingNumber", user.processingNumber);
+				pymtLongJson.put("paymentDate", HelperManager.converDateFormat(user.paymentDate));
+				pymtLongJson.put("postingDate", HelperManager.converDateFormat(user.postingDate));
+
+				try {
+					if(user.academicYear.id>0){
+						pymtLongJson.put("academicYearObject", academicYearJson);
+					}else{
+						pymtLongJson.put("academicYearObject", academicYearJson);
+					}
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				pymtLongJson.put("paymentId", user.id);
+				
+				//get student by student id
+				ObjectNode studentJson = Json.newObject();
+				studentJson.put("studentNames", user.studentNames);
+				studentJson.put("nida", user.nida);
+				studentJson.put("msisdn", user.msisdn);
+				studentJson.put("isRegistered", user.isRegistered);
+				pymtLongJson.put("student", studentJson);
+				
+				array.add(pymtLongJson);
+			}
+
+			httpStatus.put("rowCount", totalRowCount);
+			httpStatus.put("Code", "200");
+			httpStatus.put("status", "Success");
+			httpStatus.put("response", array);
+			
+			return ok(httpStatus);
+		}
+
+	}
+	
+	public static Result allCancelledUnRegisteredByInstIdPaging(Long instId, Long pageNum, Long pageMax) {
+		ObjectNode httpStatus = Json.newObject();
+		
+		
+		// Paging starts
+		Page<PaymentLog> pagedList = PaymentLog.find.where()
+				.eq("status_desc","CANCELLED")
+				.eq("ussd_status","CANCELLED")
+				.eq("is_registered", "no").eq("institution_id", instId).order("id desc").findPagingList(pageMax.intValue())
+				.setFetchAhead(false).getPage(pageNum.intValue());
+
+		// fetch and return the list
+		List<PaymentLog> allPayents = pagedList.getList();
+
+		// get the total row count (from the future)
+		int totalRowCount = pagedList.getTotalRowCount();
+		
+		
+		if (allPayents.isEmpty()) {
+			ObjectNode pymtLongJson = Json.newObject();
+
+			pymtLongJson.put("status", "No data");
+
+			httpStatus.put("Code", "401");
+			httpStatus.put("rowCount", 0);
+			httpStatus.put("status", "Bad request");
+			httpStatus.put("response", pymtLongJson);
+			
+			return badRequest(httpStatus);
+		} else {
+			ObjectNode respJson = Json.newObject();
+
+			respJson.put("rowCount", totalRowCount);
+			
+			ObjectNode pymtLongJson;
+			ObjectMapper mapper = new ObjectMapper();
+			ArrayNode array = mapper.createArrayNode();
+			for (PaymentLog user : allPayents) {
+				
+				pymtLongJson = Json.newObject();
+
+				pymtLongJson.put("accountNumber", user.bankAcc.accountNumber);
+				pymtLongJson.put("paymentPurpose", user.paymentPurpose.purpose);
+				pymtLongJson.put("amountPaid", user.amountPaid);
+				pymtLongJson.put("extTrxId", user.extTrxId);
+				pymtLongJson.put("instId", user.instId.id);
+				pymtLongJson.put("bankSlip", user.bankSlip);
+				pymtLongJson.put("paymentChannel", user.paymentChannel);
+				pymtLongJson.put("paymentDevice", user.paymentDevice);
+				pymtLongJson.put("processingNumber", user.processingNumber);
+				pymtLongJson.put("paymentDate", HelperManager.converDateFormat(user.paymentDate));
+				pymtLongJson.put("postingDate", HelperManager.converDateFormat(user.postingDate));
+
+				try {
+					if(user.academicYear.id>0){
+						pymtLongJson.put("academicYear", user.academicYear.academicYear);
+					}else{
+						pymtLongJson.put("academicYear", 0);
+					}
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				pymtLongJson.put("paymentId", user.id);
+				
+				//get student by student id
+				ObjectNode studentJson = Json.newObject();
+				studentJson.put("studentNames", user.studentNames);
+				studentJson.put("nida", user.nida);
+				studentJson.put("msisdn", user.msisdn);
+				studentJson.put("isRegistered", user.isRegistered);
+				pymtLongJson.put("student", studentJson);
+				
+				array.add(pymtLongJson);
+			}
+
+			httpStatus.put("rowCount", totalRowCount);
+			httpStatus.put("Code", "200");
+			httpStatus.put("status", "Success");
+			httpStatus.put("response", array);
+			
+			return ok(httpStatus);
 		}
 
 	}

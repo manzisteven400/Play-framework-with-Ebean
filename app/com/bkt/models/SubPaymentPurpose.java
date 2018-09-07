@@ -21,9 +21,10 @@ import play.db.ebean.Model;
  * @author pc
  *
  */
+
 @Entity
-@Table(name = "payment_purpose")
-public class PaymentPurpose extends Model {
+@Table(name = "sub_payment_purpose")
+public class SubPaymentPurpose extends Model {
 
 	/**
 	 * 
@@ -54,6 +55,10 @@ public class PaymentPurpose extends Model {
 	@Required
 	public String accPriority;
 	
+	@ManyToOne
+	@JoinColumn(name = "payment_purpose_id", referencedColumnName = "id")
+	public PaymentPurpose paymentPurpose;
+	
 	public Integer hasDependent;
 	
 	@OneToMany(cascade = CascadeType.ALL)
@@ -66,6 +71,6 @@ public class PaymentPurpose extends Model {
 	@OneToMany(cascade=CascadeType.ALL)
 	public List<USSDTempLog> ussdTempLog;
 	
-	public static Finder<Long, PaymentPurpose> find=new Finder<Long,PaymentPurpose>(Long.class, PaymentPurpose.class);
+	public static Finder<Long, SubPaymentPurpose> find=new Finder<Long,SubPaymentPurpose>(Long.class, SubPaymentPurpose.class);
 	
 }

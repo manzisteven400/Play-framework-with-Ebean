@@ -287,12 +287,16 @@ public class PaymentPurposeController extends Controller {
 					try {
 						BankAccount myAcc = BankAccount.find.byId(asJson.findPath("accountId").longValue());
 						if(myAcc.accountNumber!=null){
+							
 							paymentPurpose.accountId =myAcc;
 							paymentPurpose.instId=myAcc.instId;
+							
 						}else{
+							
 							httpStatus.put("Code", "405");
 							httpStatus.put("error", "accountId does not exist");
 							return badRequest(httpStatus);
+							
 						}
 						
 					} catch (Exception e) {

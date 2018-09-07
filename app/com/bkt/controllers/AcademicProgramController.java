@@ -116,6 +116,7 @@ public class AcademicProgramController extends Controller {
 		httpStatus.put("Code", "200");
 
 		AcademicProgram user = AcademicProgram.find.byId(id);
+		
 		if (user.id > 0) {
 			ObjectNode userJson = Json.newObject();
 

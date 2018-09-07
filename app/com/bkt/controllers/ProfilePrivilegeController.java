@@ -108,6 +108,7 @@ public class ProfilePrivilegeController extends Controller {
 	}
 
 	public static Result showJson(Long id) {
+		
 		ObjectNode httpStatus = Json.newObject();
 		ProfilePrivilege user = ProfilePrivilege.find.byId(id);
 		if (user.privilegeId > 0) {

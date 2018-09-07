@@ -53,7 +53,8 @@ public class BankSideController extends Controller {
 			String studentid= asJson.findPath("studentid").textValue();
 			
 			// do authentication
-			if(username.equalsIgnoreCase("bk") && password.equalsIgnoreCase("bk123!")){
+			if(username.equalsIgnoreCase("bk") && password.equalsIgnoreCase("BKbauk123!")){
+				//if(username.equalsIgnoreCase("bk") && password.equalsIgnoreCase("bk123!")){
 				Student user = Student.find.where().eq("reg_number",studentid).findUnique();
 				long stdId = 0;
 				try {
@@ -69,12 +70,12 @@ public class BankSideController extends Controller {
 					ObjectMapper mapper = new ObjectMapper();
 					
 					userJson.put("studentid", user.regNumber);
-					userJson.put("studentnames", user.firstName+" "+user.lastName);
+					userJson.put("studentnames", user.firstName.trim()+" "+user.lastName.trim());
 					userJson.put("schoolid", user.instId.id);
 					userJson.put("schoolname", user.instId.name);
 					userJson.put("accronym", user.instId.accronym);
 					userJson.put("instCode", user.instId.instCode);
-					userJson.put("schoolPayCharges", user.instId.studentPayTransactionFees);
+					userJson.put("studentPayTransactionFees", user.instId.studentPayTransactionFees);
 					userJson.put("facultyName", user.facultyId.name);
 					userJson.put("facultyId", user.facultyId.id);
 					userJson.put("academicyear", user.academicYear.academicYear);
@@ -88,12 +89,11 @@ public class BankSideController extends Controller {
 					int count=0;
 					//fetch all accounts for above institution
 					try {
-						
+						int myPurpsoe=1;
 						for(BankAccount bankAcc:BankAccount.find.where().eq("institution_id", user.instId.id).findList()){
 							
 							if(bankAcc.id>0){
 								
-								int myPurpsoe=1;
 								for(PaymentPurpose myPurpose:PaymentPurpose.find.where().eq("bank_account_id", bankAcc.id).findList()){
 									count++;
 									bankAccJson = Json.newObject();
@@ -110,19 +110,25 @@ public class BankSideController extends Controller {
 							}
 						}
 					} catch (Exception e) {
+						
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 						ObjectNode errorJson = Json.newObject();
 						
 						errorJson.put("status", "Institution has no active bank account");
 						errorJson.put("errorCode", "100");
+						
+						logger.trace("Responded json: {}", errorJson.toString());
+						
 						return badRequest(errorJson);
 					}
 					accSectionJson.put("totalBankAccounts", count);
 					accSectionJson.put("accounts",arrayAccs);
 					
 					userJson.put("bankaccount",accSectionJson);
-
+					
+					logger.trace("Responded json: {}", userJson.toString());
+					
 					return ok(userJson);
 				} else {
 					ObjectNode errorJson = Json.newObject();
@@ -168,7 +174,7 @@ public class BankSideController extends Controller {
 			String schoolid= asJson.findPath("schoolid").textValue();
 			
 			// do authentication
-			if(username.equalsIgnoreCase("bk") && password.equalsIgnoreCase("bk123!")){
+			if(username.equalsIgnoreCase("bk") && password.equalsIgnoreCase("BKbauk123!")){
 				Institution user = Institution.find.where().eq("inst_code",schoolid).findUnique();
 				long userId = 0;
 				try {
@@ -184,7 +190,7 @@ public class BankSideController extends Controller {
 					
 					userJson.put("schoolid", user.id);
 					userJson.put("schoolname", user.name);
-					userJson.put("schoolPayCharges", user.studentPayTransactionFees);
+					userJson.put("studentPayTransactionFees", user.studentPayTransactionFees);
 					InstitutionCalender institutionCalender = InstitutionCalender.find.where().eq("institution_id", user.id).eq("status", "active").findUnique();
 					
 					try {
@@ -212,6 +218,7 @@ public class BankSideController extends Controller {
 						for(BankAccount bankAcc:BankAccount.find.where().eq("institution_id", user.id).findList()){
 							
 							if(bankAcc.id>0){
+								
 								int myPurpsoe=1;
 								for(PaymentPurpose myPurpose:PaymentPurpose.find.where().eq("bank_account_id", bankAcc.id).findList()){
 									count++;
@@ -265,19 +272,21 @@ public class BankSideController extends Controller {
 	//Receive payment from the bank by student with id
 		 @BodyParser.Of(BodyParser.Json.class)
 		 public static Result postSchoolFeesPaidByRegisteredStudent() {
-			
+			 
+			String transactionId=USSDHelperUtils.getDateNowString();
 			MDC.put("method", "all");
 			JsonNode asJson = request().body().asJson();
-			logger.trace("Received json: {}", asJson.toString());
+			logger.info("Received json: {}", request().body().toString());
 			
 			if (asJson.isNull()) {
 				ObjectNode userJson = Json.newObject();
 				userJson.put("status", "Empty logins not allowed");
 				
-				logger.trace("Responded json: {}", userJson.toString());
+				logger.info("Responded json: {}", userJson.toString());
 				
 				return badRequest(userJson);
 			}else{
+				
 				
 				String code = asJson.findPath("code").textValue();
 				String service= asJson.findPath("service").textValue();
@@ -309,7 +318,7 @@ public class BankSideController extends Controller {
 				}
 				//String academicyear= asJson.findPath("academicyear").textValue();
 				//String semister= asJson.findPath("semister").textValue();
-				String datetime= asJson.findPath("datetime").textValue();
+				//String datetime= asJson.findPath("datetime").textValue();
 				//String bankname= asJson.findPath("bankname").textValue();
 				String bankaccount= asJson.findPath("bankaccount").textValue();
 				String paymentPurpose= asJson.findPath("paymentPurpose").textValue();
@@ -329,7 +338,7 @@ public class BankSideController extends Controller {
 				}
 				
 				// do authentication
-				if(username.equalsIgnoreCase("bk") && password.equalsIgnoreCase("bk123!")){
+				if(username.equalsIgnoreCase("bk") && password.equalsIgnoreCase("BKbauk123!")){
 					Student myStudent = Student.find.where().eq("reg_number",studentid).findUnique();
 					long stdId = 0;
 					try {
@@ -352,6 +361,7 @@ public class BankSideController extends Controller {
 							//check bank accounts
 							BankAccount myBankAcc=BankAccount.find.where().eq("account_number", bankaccount).findUnique();
 							long bankId = 0;
+							//boolean canceld=false;
 							try {
 								bankId = myBankAcc.id;
 							} catch (Exception e) {
@@ -376,6 +386,166 @@ public class BankSideController extends Controller {
 										amount = asJson.findPath("amount").intValue();
 										if(amount>0){
 											myPayment.amountPaid=amount;
+
+											myPayment.bank=myBankAcc.bankId;
+											myPayment.bankAcc=myBankAcc;
+											myPayment.paymentPurpose=myPurpose;
+											myPayment.extTrxId=transactionId;
+											myPayment.instId=myInst;
+											myPayment.bankSlip=slipnumber;
+											myPayment.msisdn=payername;
+											myPayment.paymentChannel="O2C";
+											myPayment.operator=operator;
+											myPayment.payerName=payername;
+											myPayment.paymentDate=USSDHelperUtils.getDateFromString();
+											myPayment.paymentDevice="O2C";
+											myPayment.postingDate=USSDHelperUtils.getDateFromStringPost();
+											myPayment.processingNumber=transactionid;
+											myPayment.statusDesc="posted";
+											myPayment.studentId=myStudent;
+											myPayment.ussdStatus="success";
+											myPayment.isRegistered="yes";
+											
+										
+												InstitutionCalender institutionCalender = InstitutionCalender.find.where().eq("institution_id", myInst.id).eq("status", "active").findUnique();
+												long instCaleId = 0;
+												try {
+													instCaleId = institutionCalender.id;
+												} catch (Exception e) {
+													// TODO Auto-generated catch block
+													e.printStackTrace();
+												}
+												if(instCaleId>0){
+													myPayment.academicYear=institutionCalender;
+												}else{
+													ObjectNode userJson = Json.newObject();
+													userJson.put("status", "Academic year not found");
+													return badRequest(userJson);
+												}
+												String checkSum=USSDHelperUtils.getSequenceNo();
+												if(checkSum.equals("none")){
+													
+													/*do not save trx without checksum*/ 
+													ObjectNode userJson = Json.newObject();
+													userJson.put("status", "Checksum error");
+													userJson.put("errorCode", "401");
+													return badRequest();
+												}else{
+													myPayment.batchCheckSum=checkSum;
+
+													myPayment.logBankAccount=myBankAcc.accountNumber;
+													myPayment.studentRef=myStudent.regNumber;
+													myPayment.logged=0;
+
+													myPayment.save();
+
+													//insert payment log
+													ObjectNode userJson = Json.newObject();
+													userJson.put("transactionid", transactionId);
+													userJson.put("status", "success");
+													userJson.put("code", code);
+													userJson.put("service", service);
+													userJson.put("username", username);
+													userJson.put("datetime", USSDHelperUtils.getDateNow());
+
+
+													return ok(userJson);
+												}
+												
+													
+										
+										}else if(amount<0){
+											// this is a cancelled transaction
+											int amountCancld=Math.abs(amount);
+											PaymentLog canceledPymt = PaymentLog.find.where()
+											.eq("amount_paid", amountCancld)
+											.eq("bank_slip", asJson.findPath("slipnumber").textValue())
+											.findUnique();
+											long idcanced=0;
+											try {
+												idcanced=canceledPymt.id;
+											} catch (Exception e) {
+												// TODO Auto-generated catch block
+												e.printStackTrace();
+											}
+											if(idcanced>0){
+											//date the transaction as cancelled 
+												canceledPymt.statusDesc="CANCELLED";
+												canceledPymt.ussdStatus="CANCELLED";
+												canceledPymt.amountPaid=amount;
+												canceledPymt.update();
+												//canceld=true;
+												
+
+												
+												ObjectNode userJson = Json.newObject();
+												userJson.put("transactionid", transactionId);
+												userJson.put("status", "success");
+												userJson.put("code", code);
+												userJson.put("service", service);
+												userJson.put("username", username);
+												userJson.put("datetime", USSDHelperUtils.getDateNow());
+												
+												return ok(userJson);
+											
+											}else{
+												myPayment.amountPaid=amount;
+												myPayment.bank=myBankAcc.bankId;
+												myPayment.bankAcc=myBankAcc;
+												myPayment.paymentPurpose=myPurpose;
+												myPayment.extTrxId=transactionId;
+												myPayment.instId=myInst;
+												myPayment.bankSlip=slipnumber;
+												myPayment.msisdn=payername;
+												myPayment.paymentChannel="O2C";
+												myPayment.operator=operator;
+												myPayment.payerName=payername;
+												myPayment.paymentDate=USSDHelperUtils.getDateFromString();
+												myPayment.paymentDevice="O2C";
+												myPayment.postingDate=USSDHelperUtils.getDateFromStringPost();
+												myPayment.processingNumber=transactionid;
+												myPayment.statusDesc="CANCELLED";
+												myPayment.studentId=myStudent;
+												myPayment.ussdStatus="CANCELLED";
+												myPayment.isRegistered="yes";
+												
+											
+													InstitutionCalender institutionCalender = InstitutionCalender.find.where().eq("institution_id", myInst.id).eq("status", "active").findUnique();
+													long instCaleId = 0;
+													try {
+														instCaleId = institutionCalender.id;
+													} catch (Exception e) {
+														// TODO Auto-generated catch block
+														e.printStackTrace();
+													}
+													if(instCaleId>0){
+														myPayment.academicYear=institutionCalender;
+													}else{
+														ObjectNode userJson = Json.newObject();
+														userJson.put("status", "Academic year not found");
+														return badRequest(userJson);
+													}
+													
+													myPayment.batchCheckSum=USSDHelperUtils.getSequenceNo();
+													myPayment.logBankAccount=myBankAcc.accountNumber;
+													myPayment.studentRef=myStudent.regNumber;
+													myPayment.logged=0;
+													
+												myPayment.save();
+											
+												//insert payment log
+												ObjectNode userJson = Json.newObject();
+												userJson.put("transactionid", transactionId);
+												userJson.put("status", "success");
+												userJson.put("code", code);
+												userJson.put("service", service);
+												userJson.put("username", username);
+												userJson.put("datetime", USSDHelperUtils.getDateNow());
+
+												
+												return ok(userJson);	
+											
+											}
 										}else{
 											ObjectNode userJson = Json.newObject();
 											userJson.put("status", "Amount cannot be zero");
@@ -390,101 +560,12 @@ public class BankSideController extends Controller {
 										userJson.put("errorCode", "100");
 										return badRequest(userJson);
 									}
-									
-									myPayment.bank=myBankAcc.bankId;
-									myPayment.bankAcc=myBankAcc;
-									myPayment.paymentPurpose=myPurpose;
-									myPayment.extTrxId=USSDHelperUtils.getDateNowString();
-									myPayment.instId=myInst;
-									myPayment.bankSlip=slipnumber;
-									myPayment.msisdn=payername;
-									myPayment.paymentChannel="O2C";
-									myPayment.operator=operator;
-									myPayment.payerName=payername;
-									myPayment.paymentDate=USSDHelperUtils.getDateFromString();
-									myPayment.paymentDevice="O2C";
-									myPayment.postingDate=USSDHelperUtils.getDateFromStringPost();
-									myPayment.processingNumber=transactionid;
-									myPayment.statusDesc="posted";
-									myPayment.studentId=myStudent;
-									myPayment.ussdStatus="success";
-									myPayment.isRegistered="yes";
-									
-								
-										InstitutionCalender institutionCalender = InstitutionCalender.find.where().eq("institution_id", myInst.id).eq("status", "active").findUnique();
-										long instCaleId = 0;
-										try {
-											instCaleId = institutionCalender.id;
-										} catch (Exception e) {
-											// TODO Auto-generated catch block
-											e.printStackTrace();
-										}
-										if(instCaleId>0){
-											myPayment.academicYear=institutionCalender;
-										}else{
-											ObjectNode userJson = Json.newObject();
-											userJson.put("status", "Academic year not found");
-											return badRequest(userJson);
-										}
-									
-									myPayment.save();
-								
-									//insert payment log
-									ObjectNode userJson = Json.newObject();
-									userJson.put("transactionid", myPayment.extTrxId);
-									userJson.put("status", "success");
-									userJson.put("code", code);
-									userJson.put("service", service);
-									userJson.put("username", username);
-									userJson.put("datetime", USSDHelperUtils.getDateNow());
-
-									//update the tuition fees payment log
-									/*TuitionFees tuitFees=TuitionFees.find.where()
-											.eq("institution_calender_id", myPayment.studentId.academicYear.id)
-											.eq("degree_program_id", myPayment.studentId.degreeProgram.id)
-											.eq("status", "active")
-											.findUnique();
-									long tuitionSetId = 0;
-									try {
-										tuitionSetId = tuitFees.id;
-									} catch (Exception e1) {
-										// TODO Auto-generated catch block
-										e1.printStackTrace();
-									}
-									
-									if(tuitionSetId>0){
-										StudentPayLog myTutLog=StudentPayLog.find.where()
-												.eq("student_id", myPayment.studentId.id)
-												.eq("tuition_fees_id", tuitFees.id)
-												.findUnique();
-										long stdPayLogId = 0;
-										try {
-											stdPayLogId = myTutLog.id;
-										} catch (Exception e) {
-											// TODO Auto-generated catch block
-											e.printStackTrace();
-										}
-										if(stdPayLogId>0){
-											double allPaid=myPayment.amountPaid+myTutLog.amountPaid;
-											myTutLog.amountPaid=allPaid;
-											myTutLog.facultId=myPayment.studentId.facultyId;
-											myTutLog.instId=myPayment.instId;
-											myTutLog.statusDesc="Active";
-											myTutLog.tuitionFee=tuitFees;
-											myTutLog.update();
-											}else{
-												myTutLog.amountExpected=tuitFees.amount;
-												myTutLog.amountPaid=myPayment.amountPaid;
-												myTutLog.amountPrev=0;
-												myTutLog.facultId=myPayment.studentId.facultyId;
-												myTutLog.instId=myPayment.instId;
-												myTutLog.statusDesc="Active";
-												myTutLog.tuitionFee=tuitFees;
-												myTutLog.save();
-											}
+									/*if(!canceld){
+										
+									}else{
 										
 									}*/
-									return ok(userJson);
+									
 									
 								}else{
 
@@ -521,13 +602,14 @@ public class BankSideController extends Controller {
 				
 				}
 			}
-			 }//Receive payment from the bank by un registered student
+		}//Receive payment from the bank by un registered student
 		 @BodyParser.Of(BodyParser.Json.class)
 		 public static Result postSchoolFeesPaidByUnRegisteredStudent() {
-			
+			 String transactionId="S"+USSDHelperUtils.getDateNowString();
+				
 			MDC.put("method", "all");
 			JsonNode asJson = request().body().asJson();
-			logger.trace("Received json:", asJson.toString());
+			logger.info("Received json:", asJson.toString());
 			
 			if (asJson.isNull()) {
 				ObjectNode userJson = Json.newObject();
@@ -538,6 +620,8 @@ public class BankSideController extends Controller {
 				return badRequest(userJson);
 			}else{
 				
+				logger.info("Request from Bank----university: {}", asJson);
+				
 				String code = asJson.findPath("code").textValue();
 				String service= asJson.findPath("service").textValue();
 				String username= asJson.findPath("username").textValue();
@@ -545,18 +629,17 @@ public class BankSideController extends Controller {
 				String operator= asJson.findPath("operator").textValue();
 				long schoolid= asJson.findPath("schoolid").longValue();
 				String transactionid= asJson.findPath("transactionid").textValue();
-				String datetime= asJson.findPath("datetime").textValue();
+				//String datetime= asJson.findPath("datetime").textValue();
 				String bankaccount= asJson.findPath("bankaccount").textValue();
 				String paymentPurpose= asJson.findPath("paymentPurpose").textValue();
 				//int amount= asJson.findPath("amount").intValue();
 
 				// do authentication
-				if(username.equalsIgnoreCase("bk") && password.equalsIgnoreCase("bk123!")){
-					//Student myStudent = new Student();
-					
-
+				if(username.equalsIgnoreCase("bk") && password.equalsIgnoreCase("BKbauk123!")){
+						//Student myStudent = new Student();
 						// check institution 
-						Institution myInst=Institution.find.byId(schoolid);
+						
+					Institution myInst=Institution.find.byId(schoolid);
 						
 						if(myInst.id>0){
 							
@@ -612,8 +695,6 @@ public class BankSideController extends Controller {
 									}
 									if(asJson.has("payername")){
 										pymtLong.payerName = asJson.findPath("payername").textValue();
-										
-											
 									}else{
 										ObjectNode httpStatus = Json.newObject();
 										httpStatus.put("Code", "103");
@@ -621,7 +702,6 @@ public class BankSideController extends Controller {
 										return badRequest(httpStatus);
 									
 									}
-									
 									
 									if(asJson.has("studentPhone")){
 										if(USSDHelperUtils.isPhoneValid(asJson.findPath("studentPhone").textValue())){
@@ -633,8 +713,6 @@ public class BankSideController extends Controller {
 											httpStatus.put("Code", "104");
 											httpStatus.put("error", "Student phone should be in format 2507xxxxxxxx i.e 12 digits");
 											return badRequest(httpStatus);
-										
-										
 										}
 											
 									}else{
@@ -642,17 +720,33 @@ public class BankSideController extends Controller {
 										httpStatus.put("Code", "105");
 										httpStatus.put("error", "Student phone is missing");
 										return badRequest(httpStatus);
-									
 									}
 									
 									pymtLong.isRegistered = "no";
-									
+									boolean canceld=false;
 									int amount;
 									try {
 										amount = asJson.findPath("amount").intValue();
 										if(amount>0){
 											pymtLong.amountPaid=amount;
+										}else if(amount<0){
+											// this is a cancelled transaction
+											int amountCancld=Math.abs(amount);
+											PaymentLog canceledPymt = PaymentLog.find.where()
+											.eq("amount_paid", amountCancld)
+											.eq("bank_slip", asJson.findPath("slipnumber").textValue())
+											.findUnique();
+											
+											if(canceledPymt.id>0){
+											//date the transaction as cancelled 
+												canceledPymt.statusDesc="CANCELLED";
+												canceledPymt.ussdStatus="CANCELLED";
+												canceledPymt.amountPaid=amount;
+												canceledPymt.update();
+												canceld=true;
+											}
 										}else{
+											
 											ObjectNode userJson = Json.newObject();
 											userJson.put("status", "Amount cannot be zero");
 											userJson.put("errorCode", "102");
@@ -666,49 +760,63 @@ public class BankSideController extends Controller {
 										userJson.put("errorCode", "106");
 										return badRequest(userJson);
 									}
-									pymtLong.operator = operator;
-									pymtLong.statusDesc = "posted";
-									pymtLong.ussdStatus = "success";
-									
-									
-									pymtLong.extTrxId = USSDHelperUtils.getDateNowString();
-									pymtLong.bankSlip = asJson.findPath("bankSlip").textValue();
-									pymtLong.paymentChannel = "O2C";
-									pymtLong.paymentDevice = "O2C";
-									pymtLong.processingNumber = transactionid;
-									pymtLong.paymentDate = USSDHelperUtils.getDateFromString();
-									pymtLong.postingDate = USSDHelperUtils.getDateFromStringPost();
-									pymtLong.paymentYear=HelperManager.getYearToday();
-									//try {
-										InstitutionCalender institutionCalender = InstitutionCalender.find.where().eq("institution_id", myInst.id).eq("status", "active").findUnique();
+									if(canceld){
 										
-										long instCaleId = 0;
-										try {
-											instCaleId = institutionCalender.id;
-										} catch (Exception e) {
-											// TODO Auto-generated catch block
-											e.printStackTrace();
-										}
-										if(instCaleId>0){
-											pymtLong.academicYear=institutionCalender;
-										}else{
-											ObjectNode userJson = Json.newObject();
-											userJson.put("errorCode", "106");
-											userJson.put("status", "Academic year not found");
-											return badRequest(userJson);
-										}
-									
-									pymtLong.save();
-				
-									ObjectNode userJson = Json.newObject();
-									userJson.put("transactionid", transactionid);
-									userJson.put("status", "success");
-									userJson.put("code", code);
-									userJson.put("service", service);
-									userJson.put("username", username);
-									userJson.put("datetime", USSDHelperUtils.getDateNow());
+										pymtLong.operator = operator;
+										pymtLong.statusDesc = "posted";
+										pymtLong.ussdStatus = "success";
+										
+										pymtLong.extTrxId = transactionId;
+										pymtLong.bankSlip = asJson.findPath("slipnumber").textValue();
+										pymtLong.paymentChannel = "O2C";
+										pymtLong.paymentDevice = "O2C";
+										pymtLong.processingNumber = transactionid;
+										pymtLong.paymentDate = USSDHelperUtils.getDateFromString();
+										pymtLong.postingDate = USSDHelperUtils.getDateFromStringPost();
+										pymtLong.paymentYear=HelperManager.getYearToday();
+										//try {
+											InstitutionCalender institutionCalender = InstitutionCalender.find.where().eq("institution_id", myInst.id).eq("status", "active").findUnique();
+											
+											long instCaleId = 0;
+											try {
+												instCaleId = institutionCalender.id;
+											} catch (Exception e) {
+												// TODO Auto-generated catch block
+												e.printStackTrace();
+											}
+											if(instCaleId>0){
+												pymtLong.academicYear=institutionCalender;
+											}else{
+												ObjectNode userJson = Json.newObject();
+												userJson.put("errorCode", "106");
+												userJson.put("status", "Academic year not found");
+												return badRequest(userJson);
+											}
+										
+										pymtLong.save();
+					
+										ObjectNode userJson = Json.newObject();
+										userJson.put("transactionid", transactionId);
+										userJson.put("status", "success");
+										userJson.put("code", code);
+										userJson.put("service", service);
+										userJson.put("username", username);
+										userJson.put("datetime", USSDHelperUtils.getDateNow());
 
-									return ok(userJson);
+										return ok(userJson);
+									}else{
+										
+										ObjectNode userJson = Json.newObject();
+										userJson.put("transactionid", transactionId);
+										userJson.put("status", "success");
+										userJson.put("code", code);
+										userJson.put("service", service);
+										userJson.put("username", username);
+										userJson.put("datetime", USSDHelperUtils.getDateNow());
+
+										return ok(userJson);
+									}
+									
 									
 								}else{
 
@@ -731,7 +839,6 @@ public class BankSideController extends Controller {
 							return badRequest(userJson);
 						
 						}
-						
 					
 				}else{
 
@@ -765,7 +872,7 @@ public class BankSideController extends Controller {
 				String password= asJson.findPath("password").textValue();
 				
 				// do authentication
-				if(username.equalsIgnoreCase("bk") && password.equalsIgnoreCase("bk123!")){
+				if(username.equalsIgnoreCase("bk") && password.equalsIgnoreCase("BKbauk123!")){
 				
 					List<Institution> all = Institution.find.all();
 
@@ -790,7 +897,7 @@ public class BankSideController extends Controller {
 							institutionJson.put("instCode", user.instCode);
 							institutionJson.put("schoolid", user.id);
 							institutionJson.put("schoolname", user.name);
-							institutionJson.put("schoolPayCharges", user.studentPayTransactionFees);
+							institutionJson.put("studentPayTransactionFees", user.studentPayTransactionFees);
 							
 							//set bank accounts
 							ObjectNode accSectionJson = Json.newObject();

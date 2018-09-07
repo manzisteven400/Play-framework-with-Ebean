@@ -81,7 +81,7 @@ public class Student extends Model {
 	@JoinColumn(name = "none_degree_program_id", referencedColumnName = "id")
 	public NoneDegreeProgram noneDegreeProgram;
 	
-	@Required
+	
 	@Column(unique=true)
 	public String nida;
 	

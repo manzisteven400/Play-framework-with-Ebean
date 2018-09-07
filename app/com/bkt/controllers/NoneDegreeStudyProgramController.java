@@ -3,9 +3,11 @@ package com.bkt.controllers;
 import java.util.List;
 
 import com.avaje.ebean.Page;
+import com.bkt.controllers.auth.AgendaAuthenticator;
 import com.bkt.models.NoneDegreeProgram;
 import com.bkt.models.NoneDegreeStudyProgram;
 import com.bkt.models.StudyProgramType;
+import com.bkt.utils.LogRequest;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -15,7 +17,11 @@ import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
+import play.mvc.Security.Authenticated;
 
+@LogRequest
+@Authenticated(AgendaAuthenticator.class)
+@com.bkt.utils.CorsComposition.Cors
 public class NoneDegreeStudyProgramController extends Controller{
 
 	public static Result listJson() {

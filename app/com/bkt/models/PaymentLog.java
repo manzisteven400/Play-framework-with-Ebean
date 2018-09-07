@@ -28,6 +28,7 @@ import play.db.ebean.Model;
 public class PaymentLog extends Model {
 
 	private static final long serialVersionUID = 1L;
+	
 	@Id
 	@GeneratedValue
 	public Long id;
@@ -115,6 +116,20 @@ public class PaymentLog extends Model {
 	@Column(name="posting_date")
 	public Date postingDate;
 
+	@Column(name="student_ref")
+	public String studentRef;
+	
+	@Column(name="logged")
+	public int logged;
+	
+	@Column(name="batch_check_sum")
+	public String batchCheckSum;
+	
+	@Column(name="trx_check_sum")
+	public String trxCheckSum;
+	
+	@Column(name="log_bank_account")
+	public String logBankAccount;
 	/**
 	 * bi-directional one-to-many association to USSDTempLog
 	 * 

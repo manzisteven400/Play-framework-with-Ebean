@@ -1,8 +1,5 @@
 package com.bkt.controllers;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,8 +24,10 @@ import play.mvc.Result;
 
 public class USSDHandler extends Controller {
 	private static final String OUTER_WELCOME = "Welcome to University portal for Urubuto:#1)Eng #2)Kiny";
-	public static final String SCHOOL_SERVICES_KINY = "Hitamo Serivici: #1)Minerivari#2)Amanota#3)Amatangazo#4)Tanga ubutumwa";
-	public static final String SCHOOL_SERVICES = "Select Service: #1)School fees#2)Marks Results#3)School Announcements#4)Leave Message";
+	public static final String SCHOOL_SERVICES_KINY = "Hitamo Serivici: #1)Kwishyura ayo gusaba kwiga";
+	//public static final String SCHOOL_SERVICES_KINY = "Hitamo Serivici: #1)Minerivari#2)Amanota#3)Amatangazo#4)Tanga ubutumwa";
+	public static final String SCHOOL_SERVICES = "Select Service: #1)Application fees";
+	//public static final String SCHOOL_SERVICES = "Select Service: #1)School fees#2)Marks Results#3)School Announcements#4)Leave Message";
 	public static final String BACK_MENU_SCHOOL = "#00)Home#000)Exit";
 	public static final String BACK_MENU_KINY_SCHOOL = "#00)Ahabanza#000)Gusohoka";
 	public static final String EXIT_MESSAGE_SCHOOL = "Thank you for using URUBUTO Services. Powered by BK TecHouse.";
@@ -73,7 +72,7 @@ public class USSDHandler extends Controller {
 			}
 
 			if (levelStr.equals("0") && userMessage.equalsIgnoreCase("5")) {
-
+				//if (levelStr.equals("0") && userMessage.equalsIgnoreCase("34")) {
 				try {
 					if (myLog.id > 0) {
 						for (USSDTempLog myTemp : USSDTempLog.find.where().eq("msisdn", msisdn).findList()) {
@@ -149,10 +148,10 @@ public class USSDHandler extends Controller {
 
 						if (language.equals("ENG")) {
 
-							myResponse = "Select service:#1)Pay fees,#2)Check debt,#3)Previous payments.";
+							myResponse = "Select service:#1)Pay,#2)Check debt,#3)Previous payments.";
 
 						} else {
-							myResponse = "Hitamo serivisi:#1)Kwishyura minerivari,#2)Kureba ideni,#3)Uko wishyuye.";
+							myResponse = "Hitamo serivisi:#1)Kwishyura,#2)Kureba ideni,#3)Uko wishyuye.";
 						}
 
 						myLog.menuFirst = 1;
@@ -279,7 +278,7 @@ public class USSDHandler extends Controller {
 								myLog.thirdMenu = 1;
 								myLog.level = 5;
 
-							} else {
+							} else {/*
 
 								String removeFirstBraces = USSDHelperUtils.getInstitutionsSorted().toString()
 										.replace("{", "");
@@ -302,6 +301,18 @@ public class USSDHandler extends Controller {
 								myLog.level = 5;
 								myLog.institutionList = institutionList;
 
+							*/
+							
+								if (myLog.language.equals("ENG")) {
+
+									myResponse = "Service is not available for UR now. Check again later";
+
+								} else {
+
+									myResponse = "Iyi serivisi ntabwo ihari muri UR. Murakoze";
+
+								}
+								action="FB";
 							}
 						}
 
@@ -333,12 +344,12 @@ public class USSDHandler extends Controller {
 										String institutionList = removeWhiteSpace;
 										if (myLog.language.equals("ENG")) {
 
-											myResponse = "Select purpose of payment:#"
+											myResponse = "Select college:#"
 													+ removeWhiteSpace.replaceAll(",", "#").replaceAll("=", ")");
 
 										} else {
 
-											myResponse = "Hitamo impanvu yokwishyura:#"
+											myResponse = "Hitamo ikigo:#"
 													+ removeWhiteSpace.replaceAll(",", "#").replaceAll("=", ")");
 
 										}
@@ -397,12 +408,12 @@ public class USSDHandler extends Controller {
 										String institutionList = removeWhiteSpace;
 										if (myLog.language.equals("ENG")) {
 
-											myResponse = "Select purpose of payment:#"
+											myResponse = "Select college:#"
 													+ removeWhiteSpace.replaceAll(",", "#").replaceAll("=", ")");
 
 										} else {
 
-											myResponse = "Hitamo impanvu yokwishyura:#"
+											myResponse = "Hitamo ikigo:#"
 													+ removeWhiteSpace.replaceAll(",", "#").replaceAll("=", ")");
 
 										}
@@ -411,6 +422,7 @@ public class USSDHandler extends Controller {
 										myLog.purposeAccountList = institutionList;
 
 									} else {
+										
 										if (myLog.language.equals("ENG")) {
 											myResponse = "You selected a wrong institution. Please try again."
 													+ EXIT_MESSAGE_SCHOOL;
@@ -580,7 +592,7 @@ public class USSDHandler extends Controller {
 
 									int amount = Integer.parseInt(userMessage);
 
-									if (amount >= 500) {
+									if (amount >= 100) {
 
 										if (myLog.language.equals("ENG")) {
 
@@ -638,7 +650,7 @@ public class USSDHandler extends Controller {
 
 									int amount = Integer.parseInt(userMessage);
 
-									if (amount >= 500) {
+									if (amount >= 100) {
 
 										if (myLog.language.equals("ENG")) {
 
@@ -705,7 +717,7 @@ public class USSDHandler extends Controller {
 
 										PaymentLog myFeesLog=new PaymentLog();
 										try {
-											
+											//TESTUNIV
 											String transactionId = "UNIV" + USSDHelperUtils.getDateNowString() + USSDHelperUtils.randomToken();
 										
 											String trxId = transactionId;
@@ -740,8 +752,8 @@ public class USSDHandler extends Controller {
 											myFeesLog.operator="MTN";
 											myFeesLog.statusDesc=statusDes;
 											myFeesLog.ussdStatus=statCode;
-											myFeesLog.paymentDate=USSDHelperUtils.getDateToday();
-											myFeesLog.postingDate=USSDHelperUtils.getDateToday();
+											myFeesLog.paymentDate=USSDHelperUtils.getDateFromStringPost();
+											myFeesLog.postingDate=USSDHelperUtils.getDateFromStringPost();
 
 											InstitutionCalender institutionCalender = null;
 											try {
@@ -792,6 +804,7 @@ public class USSDHandler extends Controller {
 
 												
 											}else{
+												
 												if (myLog.language.equalsIgnoreCase("ENG")) {
 													myResponse = "Thank you,Dial *182# and go to pending approvals to finish payment";
 
@@ -935,7 +948,7 @@ public class USSDHandler extends Controller {
 
 										PaymentLog myFeesLog=new PaymentLog();
 										try {
-											
+											//TESTUNIV
 											String transactionId = "UNIV" + USSDHelperUtils.getDateNowString() + USSDHelperUtils.randomToken();
 										
 											String trxId = transactionId;
@@ -972,8 +985,8 @@ public class USSDHandler extends Controller {
 											myFeesLog.operator="MTN";
 											myFeesLog.statusDesc=statusDes;
 											myFeesLog.ussdStatus=statCode;
-											myFeesLog.paymentDate=USSDHelperUtils.getDateToday();
-											myFeesLog.postingDate=USSDHelperUtils.getDateToday();
+											myFeesLog.paymentDate=USSDHelperUtils.getDateFromStringPost();
+											myFeesLog.postingDate=USSDHelperUtils.getDateFromStringPost();
 
 											InstitutionCalender institutionCalender = null;
 											try {
@@ -1120,7 +1133,8 @@ public class USSDHandler extends Controller {
 	public static Result approvedPayment() {
 		
 		JsonNode asJson = request().body().asJson();
-		
+		String logBankAcc="";
+		String stdentRef="";
 		//String msisdn=asJson.findPath("msisdn").textValue();
 		String momoRef=asJson.findPath("momoRef").textValue();
 		String processNumber=asJson.findPath("processNumber").textValue();
@@ -1138,13 +1152,16 @@ public class USSDHandler extends Controller {
 		
 		
 		//if (momoCode.equalsIgnoreCase("00000000")|| StatusDesc.contains("Successfully") || msisdn.contains("250788215324") || msisdn.contains("250788683008")) {//0783800812
-		//if (StatusDesc.equalsIgnoreCase("SUCCESSFUL")) {
-		if (StatusDesc.length()>0) {
+		if (StatusDesc.equalsIgnoreCase("SUCCESSFUL")) {
+		//if (StatusDesc.equalsIgnoreCase("SUCCESSFUL") || StatusDesc.equalsIgnoreCase("FAILED")) {
+		//if (StatusDesc.length()>0) {
 			
 				try {
 					if(myFeesLog.id>0){
 						
 						ObjectNode userJson = Json.newObject();
+						logBankAcc=myFeesLog.bankAcc.accountNumber;
+						stdentRef=myFeesLog.studentId.regNumber;
 						
 						if(myFeesLog.isRegistered.equalsIgnoreCase("no")){
 							userJson.put("studentNid", myFeesLog.nida);
@@ -1226,6 +1243,19 @@ public class USSDHandler extends Controller {
 										myFeesLog.statusDesc="posted";
 										myFeesLog.ussdStatus="success";
 									
+										String checkSum=USSDHelperUtils.getSequenceNo();
+										if(checkSum.equals("none")){
+											
+											myFeesLog.batchCheckSum="none";
+											myFeesLog.logged=5;
+										}else{
+											myFeesLog.batchCheckSum=checkSum;
+											myFeesLog.logged=0;
+										}
+										myFeesLog.logBankAccount=logBankAcc;
+										myFeesLog.studentRef=stdentRef;
+										
+										
 										String amount="";
 										//String instName="";
 										//String bankName="";
@@ -1325,6 +1355,13 @@ public class USSDHandler extends Controller {
 			myFeesLog.update();
 			
 			
+		}else if (StatusDesc.equalsIgnoreCase("FAILED")) {// rejected
+			
+			myFeesLog.statusDesc="Failed";
+			myFeesLog.ussdStatus="Failed";//rejected
+			myFeesLog.update();
+			
+			
 		} else {
 			
 
@@ -1338,7 +1375,15 @@ public class USSDHandler extends Controller {
 	}public static Result sysCrosTrigger() {
 
 
-		 LOG.debug("Univerisity...update transactions pending at mtn: " + new Date());
+		 LOG.debug("Univerisity...update transactions pending at mtn: " + USSDHelperUtils.getDateNow());
+		 
+		 try {
+				USSDHelperUtils.manageTrxAndCheckSum();
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		 
 		 try {
 				SchoolFeesCron.updatePurchaseTransaction();
 			} catch (Exception e) {
@@ -1346,10 +1391,16 @@ public class USSDHandler extends Controller {
 				e.printStackTrace();
 			}
 		 
-		 LOG.debug("Univerisity...Post transactions pending to Bank...........");
+		 try {
+			SchoolFeesCron.postSchoolFeesTransactions();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		 
 		 
 		 try {
-				SchoolFeesCron.postSchoolFeesTransactions();
+				USSDHelperUtils.writeURXML();
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -1363,21 +1414,11 @@ public class USSDHandler extends Controller {
 		responseBuffer.append(
 				"<appbody><action>" + action + "</action><msisdn>" + msisdn + "</msisdn><level>" + level + "</level>");
 		responseBuffer.append("<response>" + responseTxt + "</response><application>100</application>");
-		responseBuffer.append("<datetime>" + getDateNow() + "</datetime>");
+		responseBuffer.append("<datetime>" + USSDHelperUtils.getDateNow() + "</datetime>");
 		responseBuffer.append("</appbody>");
 
 		return responseBuffer.toString();
 	}
 
-	public static String getDateNow() {
-		String today = null;
-		Date d = new Date();
-
-		SimpleDateFormat dataBaseTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
-		today = dataBaseTime.format(d);
-		System.out.println("date today is::" + today);
-		return today;
-	}
 
 }

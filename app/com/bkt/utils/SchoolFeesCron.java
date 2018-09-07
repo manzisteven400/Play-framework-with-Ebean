@@ -24,6 +24,8 @@ public class SchoolFeesCron {
 
 	public static void updatePurchaseTransaction(){
 		//get all transactions pending
+		LOG.info("Univerisity...Cron checking .............................momo ....updatePurchaseTransaction");
+		
 		for(PaymentLog myFeesLog:PaymentLog.find.where().eq("ussd_status", "1000").eq("status_desc", "PENDING").findList()){
 			try {
 					if(myFeesLog.id>0){
@@ -38,15 +40,15 @@ public class SchoolFeesCron {
 									myFeesLog.statusDesc="Success at MTN and Pending at Bank";
 								} else if (trxStatusJson.findPath("status").textValue().equalsIgnoreCase("FAILED")) {
 									myFeesLog.extTrxId = trxStatusJson.findPath("MOMTransactionID").textValue();
-									/*myFeesLog.ussdStatus="FAILED";
-									myFeesLog.statusDesc="FAILED AT MOMO";*/
-									myFeesLog.ussdStatus="success";
-									myFeesLog.statusDesc="Success at MTN and Pending at Bank";
+									myFeesLog.ussdStatus="FAILED";
+									myFeesLog.statusDesc="FAILED AT MOMO";
+									/*myFeesLog.ussdStatus="success";
+									myFeesLog.statusDesc="Success at MTN and Pending at Bank";*/
 								}
 							} else {
 
 								myFeesLog.extTrxId = trxStatusJson.findPath("MOMTransactionID").textValue();
-								myFeesLog.ussdStatus="success";
+								myFeesLog.ussdStatus="FAILED";
 								myFeesLog.statusDesc="DECLINED AT MOMO";
 
 							}
@@ -80,11 +82,15 @@ public class SchoolFeesCron {
 	}@SuppressWarnings("deprecation")
 	public static void postSchoolFeesTransactions(){
 		//get all transactions pending
+		LOG.info("Univerisity...Cron checking TEST .............................bank ....postSchoolFeesTransactions");
+		
 		for(PaymentLog myFeesLog:PaymentLog.find.where().eq("ussd_status", "success").eq("status_desc", "Success at MTN and Pending at Bank").findList()){
-			
+			String logBankAcc="";
+			String stdentRef="";
 				try {
 					if(myFeesLog.id>0){
-						
+						logBankAcc=myFeesLog.bankAcc.accountNumber;
+						stdentRef=myFeesLog.studentId.regNumber;
 						ObjectNode userJson = Json.newObject();
 						if(myFeesLog.isRegistered.equalsIgnoreCase("no")){
 							userJson.put("studentNid", myFeesLog.nida);
@@ -162,6 +168,20 @@ public class SchoolFeesCron {
 										myFeesLog.statusDesc="posted";
 										myFeesLog.ussdStatus="success";
 										
+										String checkSum=USSDHelperUtils.getSequenceNo();
+										if(checkSum.equals("none")){
+											
+											myFeesLog.batchCheckSum="none";
+											myFeesLog.logged=5;
+											 
+										}else{
+											myFeesLog.batchCheckSum=checkSum;
+											myFeesLog.logged=0;
+										}
+										
+										myFeesLog.logBankAccount=logBankAcc;
+										myFeesLog.studentRef=stdentRef;
+										
 										String amount = null;
 										String names=myFeesLog.studentId.firstName+" "+myFeesLog.studentId.lastName;
 										try {
@@ -188,10 +208,10 @@ public class SchoolFeesCron {
 										//LOG.info("SMS is sent...."+SMSAPI.sendSMS(myFeesLog.msisdn, "URUBUTO", smsStr));
 										//LOG.info("SMS SENT...TO..."+myFeesLog.msisdn+"...Text..."+smsStr);
 										
-									}else if(postBank.findPath("status").textValue().equalsIgnoreCase("failed")){
+									}/*else if(postBank.findPath("status").textValue().equalsIgnoreCase("failed")){
 										myFeesLog.bankSlip=myFeesLog.extTrxId;
-										myFeesLog.statusDesc="posted";
-										myFeesLog.ussdStatus="success";
+										myFeesLog.statusDesc="failed at Bank";
+										myFeesLog.ussdStatus="failed";
 										
 										//String smsStr="School fees Amount payment:"+myFeesLog.amountPaid+"RWF is successfully deposited at "+myFeesLog.instId.name+"'s account in:"+myFeesLog.bank.name+" with bankslip:"+myFeesLog.bankSlip+". RWF.Powered by BK TecHouse.";
 										String smsStr="School fees Amount payment:"+myFeesLog.amountPaid+"RWF is successfully deposited at institution's account with bankslip:"+myFeesLog.bankSlip+". RWF.Powered by BK TecHouse.";
@@ -205,15 +225,15 @@ public class SchoolFeesCron {
 										SMSJson.put("senderName", "URUBUTO");
 										
 										//String smsStr="School fees Amount payment:"+amount+"RWF is successfully deposited at "+instName+"'s account in:"+bankName+" with bankslip:"+myFeesLog.bankSlip+". RWF.Powered by BK TecHouse.";
-										int SMSsent = SMSAPI.sendSMS(SMSJson).get();
-											LOG.info("SMS is sent response code...."+SMSsent);
+										// int SMSsent = SMSAPI.sendSMS(SMSJson).get();
+										//	LOG.info("SMS is sent response code...."+SMSsent);
 										//LOG.info("SMS is sent...."+SMSAPI.sendSMS(myFeesLog.msisdn, "URUBUTO", smsStr));
 										//LOG.info("SMS SENT...TO..."+myFeesLog.msisdn+"...Text..."+smsStr);
-									}
-								}else{
+									}*/
+								}/*else{
 									myFeesLog.bankSlip=myFeesLog.extTrxId;
-									myFeesLog.statusDesc="posted";
-									myFeesLog.ussdStatus="success";
+									myFeesLog.statusDesc="failed at Bank";
+									myFeesLog.ussdStatus="failed";
 									
 									//String smsStr="School fees Amount payment:"+myFeesLog.amountPaid+"RWF is successfully deposited at "+myFeesLog.instId.name+"'s account in:"+myFeesLog.bank.name+" with bankslip:"+myFeesLog.bankSlip+". RWF.Powered by BK TecHouse.";
 									String smsStr="School fees Amount payment:"+myFeesLog.amountPaid+"RWF is successfully deposited at institution's account with bankslip:"+myFeesLog.bankSlip+". RWF.Powered by BK TecHouse.";
@@ -227,12 +247,12 @@ public class SchoolFeesCron {
 									SMSJson.put("senderName", "URUBUTO");
 									
 									//String smsStr="School fees Amount payment:"+amount+"RWF is successfully deposited at "+instName+"'s account in:"+bankName+" with bankslip:"+myFeesLog.bankSlip+". RWF.Powered by BK TecHouse.";
-									int SMSsent = SMSAPI.sendSMS(SMSJson).get();
-										LOG.info("SMS is sent response code...."+SMSsent);
+									//int SMSsent = SMSAPI.sendSMS(SMSJson).get();
+									//	LOG.info("SMS is sent response code...."+SMSsent);
 									//LOG.info("SMS is sent...."+SMSAPI.sendSMS(myFeesLog.msisdn, "URUBUTO", smsStr));
 									//LOG.info("SMS SENT...TO..."+myFeesLog.msisdn+"...Text..."+smsStr);
 									
-								}	
+								}*/	
 							}
 							
 							
@@ -309,6 +329,7 @@ public class SchoolFeesCron {
 	
 		return memberDetails;
 	}public static String getMomoTransactionStatus(String trxId) throws IOException {
+		
 		String beginPoint = "http://localhost:8084/urubuto/momo.status?trxId=" + trxId;
 		URL url = new URL(beginPoint);
 		// String credentials = "imescrow:Abc12345";

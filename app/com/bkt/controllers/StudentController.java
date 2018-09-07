@@ -467,6 +467,126 @@ public class StudentController extends Controller {
 			return ok(httpStatus);
 		}
 
+	}public static Result allStudentsByInstIdAndAcademicYear(Long instId, String year) {
+		MDC.put("method", "allStudentsByInstIdAndFacultyId");
+		
+		Long academicYear = Long.parseLong("0");
+		ObjectNode academicYearJson=Json.newObject();
+		
+		try {
+			InstitutionCalender academicUnique = InstitutionCalender.find.where().eq("academic_year", year).eq("institution_id", instId).findUnique();
+			academicYear =academicUnique.id;
+		
+			academicYearJson.put("academicYear", academicUnique.academicYear);
+			academicYearJson.put("endDate", academicUnique.endDate);
+			academicYearJson.put("startDate", academicUnique.startDate);
+			academicYearJson.put("batchCode", academicUnique.batchCode);
+			academicYearJson.put("id", academicUnique.id);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		ObjectNode httpStatus = Json.newObject();
+		List<Student> all = Student.find.where().eq("institution_id", instId).eq("institution_calender_id", academicYear).order("id desc").findList();
+
+		if (all.isEmpty()) {
+			ObjectNode userJson = Json.newObject();
+			userJson.put("status", "No data");
+
+			httpStatus.put("Code", "200");
+			httpStatus.put("status", "Success");
+			httpStatus.put("rowCount", 0);
+			httpStatus.put("response", userJson);
+			LOG.info("List is returned for all students with count:" + 0);
+
+			return ok(httpStatus);
+		} else {
+			ObjectNode userJson;
+			ObjectMapper mapper = new ObjectMapper();
+			ArrayNode array = mapper.createArrayNode();
+			for (Student user : all) {
+				userJson = Json.newObject();
+
+				userJson.put("applicantStatus", user.applicantStatus.toString());
+				userJson.put("email", user.email);
+				userJson.put("facultyId", user.id);
+				userJson.put("firstName", user.firstName);
+				userJson.put("instId", user.instId.id);
+				userJson.put("lastName", user.lastName);
+				userJson.put("nida", user.nida);
+				userJson.put("password", user.password);
+				userJson.put("phone", user.phone);
+				userJson.put("stdId", user.id);
+				userJson.put("regNumber", user.regNumber);
+				userJson.put("stdPic", user.stdPic);
+				userJson.put("stdStatus", user.stdStatus.toString());
+				userJson.put("dob", user.dob);
+				userJson.put("sex", user.sex);
+				try {
+					if(user.academicYear.id>0){
+						userJson.put("academicYearObject", academicYearJson);
+					}else{
+						userJson.put("academicYearObject", academicYearJson);
+					}
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				userJson.put("stdClass", user.stdClass);
+				try {
+					userJson.put("academicProgram", user.academicProgram.id);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				try {
+					userJson.put("academicYear", user.academicYear.academicYear);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				try {
+					userJson.put("degreeProgram", user.degreeProgram.id);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				try {
+					userJson.put("noneDegreeProgram", user.noneDegreeProgram.id);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				try {
+					userJson.put("studyProgram", user.studyProgram.id);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				try {
+					userJson.put("facultyName", user.facultyId.name);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}try {
+					userJson.put("facultyId", user.facultyId.id);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+				array.add(userJson);
+			}
+			httpStatus.put("rowCount", all.size());
+			httpStatus.put("Code", "200");
+			httpStatus.put("status", "Success");
+			httpStatus.put("response", array);
+
+			LOG.info("List is returned for all students with count:" + all.size());
+
+			return ok(httpStatus);
+		}
+
 	}
 
 	public static Result allStudentsByInstId(Long instId) {
@@ -600,12 +720,14 @@ public class StudentController extends Controller {
 			try {
 				userJson.put("academicYear", user.academicYear.academicYear);
 			} catch (Exception e) {
+				
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			try {
 				userJson.put("degreeProgram", user.degreeProgram.id);
 			} catch (Exception e) {
+				
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -931,7 +1053,143 @@ public class StudentController extends Controller {
 
 	}
 
-	public static Result allStudentsByInstiPaging(Long instId, Long pageNum, Long pageMax) {
+	public static Result allStudentsByInstiAndAcademicYearPaging(Long instId, String year, Long pageNum, Long pageMax) {
+		MDC.put("method", "allStudentsByInstiAndAcademicYearPaging");
+
+		ObjectNode httpStatus = Json.newObject();
+
+		Long academicYear = Long.parseLong("0");
+		ObjectNode academicYearJson=Json.newObject();
+		
+		try {
+			InstitutionCalender academicUnique = InstitutionCalender.find.where().eq("academic_year", year).eq("institution_id", instId).findUnique();
+			academicYear =academicUnique.id;
+		
+			academicYearJson.put("academicYear", academicUnique.academicYear);
+			academicYearJson.put("endDate", academicUnique.endDate);
+			academicYearJson.put("startDate", academicUnique.startDate);
+			academicYearJson.put("batchCode", academicUnique.batchCode);
+			academicYearJson.put("id", academicUnique.id);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		// Paging starts
+		Page<Student> pagedList = Student.find.where()
+				.eq("institution_id", instId)
+				.eq("institution_calender_id", academicYear)
+				.orderBy("id desc")
+				.findPagingList(pageMax.intValue()).setFetchAhead(false).getPage(pageNum.intValue());
+
+		// fetch and return the list
+		List<Student> allStudents = pagedList.getList();
+
+		// get the total row count (from the future)
+		int totalRowCount = pagedList.getTotalRowCount();
+
+		if (allStudents.size() > 0) {
+			ObjectNode userJson;
+			ObjectMapper mapper = new ObjectMapper();
+			ArrayNode array = mapper.createArrayNode();
+			for (Student user : allStudents) {
+				userJson = Json.newObject();
+
+				userJson.put("applicantStatus", user.applicantStatus.toString());
+				userJson.put("email", user.email);
+				userJson.put("firstName", user.firstName);
+				userJson.put("instId", user.instId.id);
+				userJson.put("lastName", user.lastName);
+				userJson.put("nida", user.nida);
+				userJson.put("password", user.password);
+				userJson.put("phone", user.phone);
+				userJson.put("stdId", user.id);
+				userJson.put("regNumber", user.regNumber);
+				userJson.put("stdPic", user.stdPic);
+				userJson.put("stdStatus", user.stdStatus.toString());
+				userJson.put("dob", user.dob);
+				userJson.put("sex", user.sex);
+				userJson.put("stdClass", user.stdClass);
+				try {
+					if(user.academicYear.id>0){
+						userJson.put("academicYearObject", academicYearJson);
+					}else{
+						userJson.put("academicYearObject", academicYearJson);
+					}
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				try {
+					userJson.put("academicProgram", user.academicProgram.id);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				try {
+					userJson.put("academicYear", user.academicYear.academicYear);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				try {
+					userJson.put("degreeProgram", user.degreeProgram.id);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				try {
+					userJson.put("noneDegreeProgram", user.noneDegreeProgram.id);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				try {
+					userJson.put("studyProgram", user.studyProgram.id);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+				try {
+					userJson.put("facultyName", user.facultyId.name);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}try {
+					userJson.put("facultyId", user.facultyId.id);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				array.add(userJson);
+			}
+
+			httpStatus.put("rowCount", totalRowCount);
+			httpStatus.put("Code", "200");
+			httpStatus.put("status", "Success");
+			httpStatus.put("response", array);
+
+			LOG.info("List is returned for all students with count:" + totalRowCount);
+
+			return ok(httpStatus);
+		} else {
+			ObjectNode userJson = Json.newObject();
+
+			userJson.put("status", "No data");
+
+			httpStatus.put("Code", "200");
+			httpStatus.put("status", "Success");
+			httpStatus.put("rowCount", 0);
+			httpStatus.put("response", userJson);
+
+			LOG.info("List is returned for all students with count:" + 0);
+
+			return ok(httpStatus);
+		}
+
+	}public static Result allStudentsByInstiPaging(Long instId, Long pageNum, Long pageMax) {
 		MDC.put("method", "allStudentsByInstiPaging");
 
 		ObjectNode httpStatus = Json.newObject();

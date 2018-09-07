@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.bkt.utils.SchoolFeesCron;
+import com.bkt.utils.USSDHelperUtils;
 
 import play.GlobalSettings;
 import play.libs.Akka;
@@ -32,10 +33,21 @@ public class Global extends GlobalSettings {
 		Runnable updateBkCaisse = new Runnable() {
 			@Override
 			public void run() {
-				
-
 				 LOG.debug("Univerisity...AKKA schedule statrts...Time is now: " + new Date());
-				 LOG.debug("Univerisity...Cron checking transaction status...Time is now: " + new Date());
+				 
+				/*try {
+					USSDHelperUtils.manageTrxAndCheckSum();
+				} catch (Exception e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}*/
+
+				 try {
+						SchoolFeesCron.updatePurchaseTransaction();
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				 
 				 try {
 					SchoolFeesCron.postSchoolFeesTransactions();
@@ -43,6 +55,14 @@ public class Global extends GlobalSettings {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+				 
+				 
+				 try {
+						USSDHelperUtils.writeURXML();
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				 LOG.debug("Univerisity...Updating transaction status is started...........");
 				 
 			

@@ -13,14 +13,17 @@ import com.bkt.models.AcademicProgram;
 import com.bkt.models.Bank;
 import com.bkt.models.BankAccount;
 import com.bkt.models.DegreeProgram;
+import com.bkt.models.DegreeStudyProgram;
 import com.bkt.models.Faculty;
 import com.bkt.models.Institution;
 import com.bkt.models.InstitutionCalender;
 import com.bkt.models.NoneDegreeProgram;
+import com.bkt.models.NoneDegreeStudyProgram;
 import com.bkt.models.PaymentLog;
 import com.bkt.models.PaymentPurpose;
 import com.bkt.models.Student;
 import com.bkt.models.StudyProgramType;
+import com.bkt.models.TuitionFees;
 import com.bkt.models.Student.ApplicantStatus;
 import com.bkt.models.Student.StudentStatus;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -36,7 +39,7 @@ public class PaymentLogUtils {
 	public static JsonNode  sumOfPaymentByStudentPerInstIdAndYear(Long instId,Long year,String isRegistered) {
 	    final String sql = "SELECT SUM(amount_paid) as total_sum,student_id,institution_calender_id FROM payment_log where status_desc='posted' AND ussd_status='SUCCESS' AND institution_id="+instId+" AND is_registered=\""+isRegistered+"\"  AND institution_calender_id="+year+" group by student_id";
 	    ObjectNode payLog;
-	     ObjectNode allpayLog= Json.newObject();
+	    ObjectNode allpayLog= Json.newObject();
 	    ObjectMapper mapper = new ObjectMapper();
 		ArrayNode array = mapper.createArrayNode();
 		
@@ -47,15 +50,255 @@ public class PaymentLogUtils {
 	    for(SqlRow row:findList){
 	    	payLog = Json.newObject();
 	    	try {
+	    		
 	    		totalAmount=totalAmount+row.getInteger("total_sum");
 		    	payLog.put("totalSum", row.getLong("total_sum"));
 		    	payLog.put("studentId", row.getLong("student_id"));
+		    	//student object
+		    	Student std=Student.find.byId(row.getLong("student_id"));
+		    	ObjectNode stdJson = Json.newObject();;
+		    	stdJson.put("firstName", std.firstName);
+		    	stdJson.put("lastName", std.lastName);
+		    	stdJson.put("dob", std.dob);
+		    	stdJson.put("email", std.email);
+		    	stdJson.put("nida", std.nida);
+		    	stdJson.put("phone", std.phone);
+		    	stdJson.put("phone", std.stdClass);
+		    	stdJson.put("regNumber", std.regNumber);
+		    	stdJson.put("sex", std.sex);
+		    	
+		    	//Studyprogram object
+		    	ObjectNode studyJson = Json.newObject();
+		    	studyJson.put("studyProgramName", std.studyProgram.typeName);
+		    	studyJson.put("studyProgramId", std.studyProgram.id);
+		    	stdJson.put("studyProgram", studyJson);
+		    	String accronym="deg1";
+		    	String accronym2="deg2";
+		    	try {
+		    		if(std.degreeProgram.degreeAccronym!=null){
+		    			accronym=std.degreeProgram.degreeAccronym;
+		    			//degree program object
+				    	ObjectNode degreeJson = Json.newObject();
+				    	degreeJson.put("degreeAccronym", std.degreeProgram.degreeAccronym);
+				    	degreeJson.put("degreeName", std.degreeProgram.degreeName);
+				    	degreeJson.put("degreeId", std.degreeProgram.id);
+				    	stdJson.put("degreeProgram", degreeJson);
+				    	
+		    		}
+		    		
+					
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					accronym="deg1";
+				}
+		    	
+		    		try {
+		    			if(std.noneDegreeProgram.degreeAccronym.length()>0){
+		    				accronym2=std.noneDegreeProgram.degreeAccronym;
+		    				ObjectNode degreeJson = Json.newObject();
+					    	degreeJson.put("degreeAccronym", std.noneDegreeProgram.degreeAccronym);
+					    	degreeJson.put("degreeName", std.noneDegreeProgram.degreeName);
+					    	degreeJson.put("degreeId", std.noneDegreeProgram.id);
+					    	stdJson.put("degreeProgram", degreeJson);
+		    			}
+		    			
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						//e.printStackTrace();
+						accronym2="deg2";
+					}
+		    		
+		    	if(!(accronym.equals("deg1")) && accronym.length()>0 && accronym2.equals("deg2")){
+		    		
+		    		DegreeStudyProgram degreeStudy=DegreeStudyProgram
+		    				.find
+		    				.where()
+		    				.eq("degree_program_id", std.degreeProgram.id)
+		    				.eq("study_program_type_id", std.studyProgram.id).findUnique();
+		    		
+		    		TuitionFees tuit=TuitionFees.find.where()
+		    				.eq("degree_study_program_id", degreeStudy.id)
+		    				.eq("institution_calender_id", std.academicYear.id)
+		    				.eq("status", "active")
+		    				.findUnique();
+
+			    	stdJson.put("amount", tuit.amount);
+			    	stdJson.put("status", tuit.status);
+			    	stdJson.put("tuitionId", tuit.id);
+			    	
+		    	}else if(!(accronym2.equals("deg2")) && accronym2.length()>0 && accronym.equals("deg1")){
+
+		    		NoneDegreeStudyProgram degreeStudy=NoneDegreeStudyProgram
+		    				.find.where()
+		    				.eq("none_degree_program_id", std.noneDegreeProgram.id)
+		    				.eq("study_program_type_id", std.studyProgram.id).findUnique();
+		    		TuitionFees tuit=TuitionFees.find.where()
+		    				.eq("none_degree_study_program_id", degreeStudy.id)
+		    				.eq("institution_calender_id", std.academicYear.id)
+		    				.findUnique();
+
+			    	stdJson.put("amount", tuit.amount);
+			    	stdJson.put("status", tuit.status);
+			    	stdJson.put("tuitionId", tuit.id);
+		    	
+		    	}
+		    	payLog.put("studentTuition", stdJson);
 		    	payLog.put("instCalender", row.getLong("institution_calender_id"));
 		    	array.add(payLog);
 			} catch (Exception e) {
 				
 				// TODO Auto-generated catch block
-				//e.printStackTrace();
+				e.printStackTrace();
+				
+			}
+	    }
+	    allpayLog.put("data", array);
+	    allpayLog.put("totalAmount", totalAmount);
+	    return allpayLog;
+	}public static JsonNode  sumOfPartialPaymentsByStudentPerInstIdAndYear(Long instId,Long year,String isRegistered , int paymentFinished) {
+	    final String sql = "SELECT SUM(amount_paid) as total_sum,student_id,institution_calender_id FROM payment_log where status_desc='posted' AND ussd_status='SUCCESS' AND institution_id="+instId+" AND is_registered=\""+isRegistered+"\"  AND institution_calender_id="+year+" group by student_id";
+	    ObjectNode payLog;
+	    ObjectNode allpayLog= Json.newObject();
+	    ObjectMapper mapper = new ObjectMapper();
+		ArrayNode array = mapper.createArrayNode();
+		
+		int partialPayment=0;
+		
+	    //SELECT SUM(amount_paid) as tot_amount,student_id,institution_calender_id FROM university_db.payment_log where is_registered='yes' AND institution_calender_id=1 group by student_id
+	    SqlQuery sqlQuery = Ebean.createSqlQuery(sql);
+	    List<SqlRow> findList = sqlQuery.findList();
+	    int totalAmount=0;
+	    for(SqlRow row:findList){
+	    	payLog = Json.newObject();
+	    	try {
+	    		
+	    		totalAmount=totalAmount+row.getInteger("total_sum");
+		    	payLog.put("totalSum", row.getLong("total_sum"));
+		    	payLog.put("studentId", row.getLong("student_id"));
+		    	//student object
+		    	Student std=Student.find.byId(row.getLong("student_id"));
+		    	ObjectNode stdJson = Json.newObject();;
+		    	stdJson.put("firstName", std.firstName);
+		    	stdJson.put("lastName", std.lastName);
+		    	stdJson.put("dob", std.dob);
+		    	stdJson.put("email", std.email);
+		    	stdJson.put("nida", std.nida);
+		    	stdJson.put("phone", std.phone);
+		    	stdJson.put("phone", std.stdClass);
+		    	stdJson.put("regNumber", std.regNumber);
+		    	stdJson.put("sex", std.sex);
+		    	
+		    	//Studyprogram object
+		    	ObjectNode studyJson = Json.newObject();
+		    	studyJson.put("studyProgramName", std.studyProgram.typeName);
+		    	studyJson.put("studyProgramId", std.studyProgram.id);
+		    	stdJson.put("studyProgram", studyJson);
+		    	String accronym="deg1";
+		    	String accronym2="deg2";
+		    	try {
+		    		if(std.degreeProgram.degreeAccronym!=null){
+		    			accronym=std.degreeProgram.degreeAccronym;
+		    			//degree program object
+				    	ObjectNode degreeJson = Json.newObject();
+				    	degreeJson.put("degreeAccronym", std.degreeProgram.degreeAccronym);
+				    	degreeJson.put("degreeName", std.degreeProgram.degreeName);
+				    	degreeJson.put("degreeId", std.degreeProgram.id);
+				    	stdJson.put("degreeProgram", degreeJson);
+				    	
+		    		}
+		    		
+					
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					accronym="deg1";
+				}
+		    	
+		    		try {
+		    			if(std.noneDegreeProgram.degreeAccronym.length()>0){
+		    				accronym2=std.noneDegreeProgram.degreeAccronym;
+		    				ObjectNode degreeJson = Json.newObject();
+					    	degreeJson.put("degreeAccronym", std.noneDegreeProgram.degreeAccronym);
+					    	degreeJson.put("degreeName", std.noneDegreeProgram.degreeName);
+					    	degreeJson.put("degreeId", std.noneDegreeProgram.id);
+					    	stdJson.put("degreeProgram", degreeJson);
+		    			}
+		    			
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						//e.printStackTrace();
+						accronym2="deg2";
+					}
+		    		
+		    	if(!(accronym.equals("deg1")) && accronym.length()>0 && accronym2.equals("deg2")){
+		    		
+		    		DegreeStudyProgram degreeStudy=DegreeStudyProgram
+		    				.find
+		    				.where()
+		    				.eq("degree_program_id", std.degreeProgram.id)
+		    				.eq("study_program_type_id", std.studyProgram.id).findUnique();
+		    		
+		    		TuitionFees tuit=TuitionFees.find.where()
+		    				.eq("degree_study_program_id", degreeStudy.id)
+		    				.eq("institution_calender_id", std.academicYear.id)
+		    				.eq("status", "active")
+		    				.findUnique();
+
+			    	stdJson.put("amount", tuit.amount);
+			    	stdJson.put("status", tuit.status);
+			    	stdJson.put("tuitionId", tuit.id);
+			    	
+			    	//check if tuition fees is fully paid
+			    	if(tuit.amount>row.getInteger("total_sum")){
+			    		partialPayment=1;
+			    	}else if(tuit.amount==row.getInteger("total_sum")){
+			    		partialPayment=2;
+			    	}else if(tuit.amount<row.getInteger("total_sum")){
+			    		partialPayment=3;
+			    	}
+			    	
+		    	}else if(!(accronym2.equals("deg2")) && accronym2.length()>0 && accronym.equals("deg1")){
+
+		    		NoneDegreeStudyProgram degreeStudy=NoneDegreeStudyProgram
+		    				.find.where()
+		    				.eq("none_degree_program_id", std.noneDegreeProgram.id)
+		    				.eq("study_program_type_id", std.studyProgram.id).findUnique();
+		    		TuitionFees tuit=TuitionFees.find.where()
+		    				.eq("none_degree_study_program_id", degreeStudy.id)
+		    				.eq("institution_calender_id", std.academicYear.id)
+		    				.findUnique();
+
+		    		
+			    	stdJson.put("amount", tuit.amount);
+			    	stdJson.put("status", tuit.status);
+			    	stdJson.put("tuitionId", tuit.id);
+			    	
+			    	//check if tuition fees is fully paid
+			    	if(tuit.amount>row.getInteger("total_sum")){
+			    		partialPayment=1;
+			    	}else if(tuit.amount==row.getInteger("total_sum")){
+			    		partialPayment=2;
+			    	}else if(tuit.amount<row.getInteger("total_sum")){
+			    		partialPayment=3;
+			    	}
+		    	
+		    	}
+		    	payLog.put("studentTuition", stdJson);
+		    	payLog.put("instCalender", row.getLong("institution_calender_id"));
+		    	
+		    	if(partialPayment==1 && paymentFinished==1){
+		    		array.add(payLog);
+		    	}else if(partialPayment==2 && paymentFinished==2){
+		    		array.add(payLog);
+		    	}else if(partialPayment==3 && paymentFinished==3){
+		    		array.add(payLog);
+		    	}
+		    	
+			} catch (Exception e) {
+				
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 				
 			}
 	    }
@@ -256,11 +499,18 @@ public class PaymentLogUtils {
 	    	payLog.put("totalSum", row.getLong("tot_amount"));
 	    	payLog.put("purposeId", row.getLong("payment_purpose_id"));
 	    	payLog.put("instCalender", row.getLong("institution_calender_id"));
+	    	
+	    	ObjectNode purposeJson = Json.newObject();
+	    	PaymentPurpose myPurpose=PaymentPurpose.find.byId(row.getLong("payment_purpose_id"));
+	    	purposeJson.put("purposeId", myPurpose.id);
+	    	purposeJson.put("purposeDescription", myPurpose.description);
+	    	purposeJson.put("purposeName", myPurpose.purpose);
+	    	payLog.put("purposeJson", purposeJson);
 	    	array.add(payLog);
 		} catch (Exception e) {
 			
 			// TODO Auto-generated catch block
-			//e.printStackTrace();
+			e.printStackTrace();
 			
 		}
 

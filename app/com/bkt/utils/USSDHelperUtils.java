@@ -3,6 +3,7 @@ package com.bkt.utils;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.cert.CertificateException;
 import java.text.DateFormat;
@@ -10,7 +11,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -23,7 +26,9 @@ import javax.security.cert.X509Certificate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.bkt.models.CheckSumLog;
 import com.bkt.models.Institution;
+import com.bkt.models.PaymentLog;
 import com.bkt.models.PaymentPurpose;
 import com.bkt.models.Topic;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -60,11 +65,19 @@ public class USSDHelperUtils {
 	public static String getDateNow() {
 		String today = null;
 		Date d = new Date();
-
+		//String myConvertedDate = "";
 		SimpleDateFormat dataBaseTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
+		dataBaseTime.setTimeZone(TimeZone.getTimeZone("CAT"));
 		today = dataBaseTime.format(d);
 		System.out.println("date today is::" + today);
+		
+		/*try {
+			myConvertedDate=GetCurrentDateTimeZone.convertTimeZone(today);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}*/
+		
 		return today;
 	}
 
@@ -72,6 +85,7 @@ public class USSDHelperUtils {
 
 		DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 		try {
+			
 			Date today = format.parse(getDateNow());
 			return today;
 		} catch (ParseException e) {
@@ -105,10 +119,10 @@ public class USSDHelperUtils {
 		Date d = new Date();
 
 		SimpleDateFormat dataBaseTime = new SimpleDateFormat("yyyyMMddHHmmss");
-
+		dataBaseTime.setTimeZone(TimeZone.getTimeZone("CAT"));
 		today = dataBaseTime.format(d);
 		System.out.println("date today is::" + today);
-		return today;
+		return "SFEES"+today;
 	}
 
 	public static Map<Integer, String> getInstitutionsSorted() {
@@ -140,8 +154,17 @@ public class USSDHelperUtils {
 		Map<Integer, String> map = new HashMap<Integer, String>();
 		int count = 0;
 		for (PaymentPurpose inst : PaymentPurpose.find.where().eq("institution_id", instId).findList()) {
-			count++;
-			map.put(count, inst.purpose);
+			
+			String accNumber=inst.accountId.accountNumber;
+			if(accNumber.length()==17 ){
+				count++;
+				//map.put(count, inst.purpose);
+				map.put(count, inst.purpose+"("+inst.accountId.accountNumber+")");
+			}
+			
+		}
+		if(count==0){
+			map.put(0, "No valid purpose found/Nta makuru y'ibyishyurwa ahari");
 		}
 		return map;
 	}
@@ -159,13 +182,240 @@ public class USSDHelperUtils {
 
 		}
 		return institution;
+	}public static String getCheckSum() {
+
+		String checkSumStr=generateCheckSum();
+		CheckSumLog checkSum = CheckSumLog.find.where()
+				.eq("status", 0)
+				.startsWith("date_time", getDateNow().split(" ")[0]).findUnique();
+		try {
+			if(checkSum.id>0){
+				if(checkSum.checkSumCount>0 && checkSum.checkSumCount<5){
+					int checkCnt=checkSum.checkSumCount;
+					if(checkCnt==4){
+						checkSum.status=1;
+						checkSum.update();
+						
+						checkSum=new CheckSumLog();
+						checkSum.checkSum=checkSumStr;
+						checkSum.checkSumCount=1;
+						checkSum.checkSumType="batch";
+						checkSum.status=0;
+						
+						checkSum.save();
+					}else{
+						checkSumStr=checkSum.checkSum;
+						checkSum.checkSumCount=checkCnt+1;	
+						checkSum.update();
+					}
+				}else{
+					checkSum.status=1;
+					checkSum.update();
+					
+					checkSum=new CheckSumLog();
+					checkSum.checkSum=checkSumStr;
+					checkSum.checkSumCount=1;
+					checkSum.checkSumType="batch";
+					checkSum.status=0;
+					
+					checkSum.save();
+				}
+			}else{
+				checkSum=new CheckSumLog();
+				checkSum.checkSum=checkSumStr;
+				checkSum.checkSumCount=1;
+				checkSum.checkSumType="batch";
+				checkSum.status=0;
+				
+				checkSum.save();
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			
+			checkSum=new CheckSumLog();
+			
+			checkSum.checkSum=checkSumStr;
+			checkSum.checkSumCount=1;
+			checkSum.checkSumType="batch";
+			checkSum.status=0;
+			
+			checkSum.save();
+		}
+		
+		return checkSumStr;
+	}public static long getTimeDifference(String dateTime) {
+		
+		SimpleDateFormat dataBaseTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+		String oldTime = dateTime;
+		String timeNow = getDateNow();
+		
+		Date dateNow;
+		Date dateFormer;
+		long difference = 0;
+		try {
+			dateNow = dataBaseTime.parse(timeNow);
+			dateFormer = dataBaseTime.parse(oldTime);
+			 difference = (dateNow.getTime() - dateFormer.getTime())/(60 * 1000) % 60;
+			
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
+		}
+		LOG.info("time difference now is...."+difference);
+		return difference;
+	}public static String getSequenceNo() {
+
+		String checkSumStr="none";
+		CheckSumLog checkSum =new CheckSumLog();
+		 
+		try {
+			checkSum = CheckSumLog.find.where()
+					.eq("status", 0)
+					.startsWith("date_time", getDateNow().split(" ")[0]).findUnique();
+			long myTrxId=0;
+			try {
+				myTrxId=checkSum.id;
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			
+			if(myTrxId>0){
+				
+				checkSumStr=checkSum.checkSum;
+				
+			}else{
+				
+				checkSum=new CheckSumLog();
+				checkSumStr=getDateNow().split(" ")[1].replaceAll(":", "");
+				
+				checkSum.checkSum=checkSumStr;
+				checkSum.checkSumCount=1;
+				checkSum.checkSumType="batch";
+				checkSum.dateTime=getDateNow();
+				checkSum.status=0;
+				
+				checkSum.save();
+			}
+			return checkSum.checkSum;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			checkSum=new CheckSumLog();
+			
+			checkSum.checkSum=getDateNow().split(" ")[1].replaceAll(":", "");
+			checkSum.checkSumCount=1;
+			checkSum.checkSumType="batch";
+			checkSum.dateTime=getDateNow();
+			checkSum.status=0;
+			
+			checkSum.save();
+			return checkSum.checkSum;
+			
+		}
+		
+	}public static String manageTrxAndCheckSum() {
+		
+		LOG.info("Univerisity...Cron checking .....................files............manageTrxAndCheckSum");
+		
+		String checkSumStr="none";
+		CheckSumLog checkSum =new CheckSumLog();
+		 
+		try {
+			checkSum = CheckSumLog.find.where()
+					.eq("status", 0)
+					.startsWith("date_time", getDateNow().split(" ")[0]).findUnique();
+			long myTrxId=0;
+			try {
+				myTrxId=checkSum.id;
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			
+			if(myTrxId>0){
+				if (getTimeDifference(checkSum.dateTime) < 10) {
+					checkSumStr=checkSum.checkSum;
+				}else{
+					/*checksum should expire*/
+					checkSumStr=getDateNow().split(" ")[1].replaceAll(":", "");
+					checkSum.status=1;
+					checkSum.update();
+					
+					/*keep old copy of checksum to be used while updating the transactions*/ 
+					String oldCheckum=checkSum.checkSum;
+					
+					/* Insert new checksum to be used by incoming payments*/
+					checkSum=new CheckSumLog();
+					
+					checkSum.checkSum=checkSumStr;
+					checkSum.checkSumCount=1;
+					checkSum.checkSumType="batch";
+					checkSum.dateTime=getDateNow();
+					checkSum.status=0;
+					
+					checkSum.save();
+					
+					/* all transactions belonging to above checksum should be updated to be pulled */
+					List<PaymentLog> allTrxs = PaymentLog.find.where()
+							.eq("batch_check_sum", oldCheckum)
+							.eq("logged", 0).findList();
+					int sizeList=0;
+					try {
+						sizeList=allTrxs.size();
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					if(sizeList>0){
+					for(PaymentLog myTrx:allTrxs){
+						myTrx.logged=2;
+						myTrx.update();
+					}	
+					}
+					
+				}
+				
+			}else{
+				
+				checkSum=new CheckSumLog();
+				checkSumStr=getDateNow().split(" ")[1].replaceAll(":", "");
+				
+				checkSum.checkSum=checkSumStr;
+				checkSum.checkSumCount=1;
+				checkSum.checkSumType="batch";
+				checkSum.dateTime=getDateNow();
+				checkSum.status=0;
+				
+				checkSum.save();
+			}
+			return checkSum.checkSum;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			checkSum=new CheckSumLog();
+			
+			checkSum.checkSum=getDateNow().split(" ")[1].replaceAll(":", "");
+			checkSum.checkSumCount=1;
+			checkSum.checkSumType="batch";
+			checkSum.dateTime=getDateNow();
+			checkSum.status=0;
+			
+			checkSum.save();
+			return checkSum.checkSum;
+			
+		}
+		
 	}
 
 	public static String postPayment(String params) {
 
 		String line = "";
 
-		String beginPoint = "https://10.102.148.201:8443/schoolfees/bk/techouse/rest/payment/university/from/momo-rwanda";
+		String beginPoint = "https://172.16.20.45:8443/schoolfees/bk/techouse/rest/payment/university/from/momo-rwanda";
+		//String beginPoint = "https://10.102.148.201:8443/schoolfees/bk/techouse/rest/payment/university/from/momo-rwanda";
 
 		try {
 			// URL url = new URL("https://hostname/index.html");
@@ -203,6 +453,55 @@ public class USSDHelperUtils {
 				BufferedReader in = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
 				while ((decodedString = in.readLine()) != null) {
 					LOG.info("Error Response from BK:"+decodedString);
+					line=decodedString;
+				}
+			}
+
+		} catch (Exception e) {
+			//
+
+			e.printStackTrace();
+			
+		}
+		return line;
+
+	}public static String writeURXML() {
+
+		String line = "";
+
+		String beginPoint = "http://localhost:8084/urfeeshandler/file.writing";
+
+		try {
+			// URL url = new URL("https://hostname/index.html");
+			URL url = new URL(beginPoint);
+
+			
+			 HttpURLConnection connection =(HttpURLConnection)url.openConnection();
+			connection.setRequestMethod("GET");
+			connection.setRequestProperty("charset", "utf-8");
+
+			connection.setDoOutput(true);
+
+			connection.connect();
+
+			OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream());
+
+			writer.flush();
+			int statusCode = connection.getResponseCode();
+			String decodedString;
+			if (statusCode == 200) {
+
+				BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+				while ((decodedString = in.readLine()) != null) {
+					line=decodedString;
+					LOG.info("Success Response from cron schoolfees:"+decodedString);
+				}
+				
+			} else {
+				/* error from server */
+				BufferedReader in = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
+				while ((decodedString = in.readLine()) != null) {
+					LOG.info("Error Response from cron schoolfees:"+decodedString);
 					line=decodedString;
 				}
 			}
@@ -328,6 +627,20 @@ public class USSDHelperUtils {
 	public static int randomToken() {
 		int number = (int) (Math.random() * 10000000) + 1;
 		return number;
+	}
+	public static String generateCheckSum() {
+		String checkSum="bok" + getDateNowStr()+1;
+		
+		return checkSum;
+	}
+	public static String getDateNowStr() {
+		String today = null;
+		Date d = new Date();
+
+		SimpleDateFormat dataBaseTime = new SimpleDateFormat("yyyyMMddHHmmss");
+
+		today = dataBaseTime.format(d);
+		return today;
 	}
 
 	public static Date getDateToday() {

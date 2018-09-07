@@ -194,6 +194,7 @@ public class BankAccountController extends Controller {
 		//int totalRowCount = pagedList.getTotalRowCount();
 
 		if (allAccounts.size() < 0) {
+			
 			ObjectNode userJson = Json.newObject();
 
 			userJson.put("status", "No data");
