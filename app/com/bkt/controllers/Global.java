@@ -35,12 +35,12 @@ public class Global extends GlobalSettings {
 			public void run() {
 				 LOG.debug("Univerisity...AKKA schedule statrts...Time is now: " + new Date());
 				 
-				/*try {
+				try {
 					USSDHelperUtils.manageTrxAndCheckSum();
 				} catch (Exception e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
-				}*/
+				}
 
 				 try {
 						SchoolFeesCron.updatePurchaseTransaction();
@@ -65,8 +65,6 @@ public class Global extends GlobalSettings {
 					}
 				 LOG.debug("Univerisity...Updating transaction status is started...........");
 				 
-			
-			
 				}
 		};
 		Akka.system().scheduler().schedule(delay, frequency, updateBkCaisse, Akka.system().dispatcher());

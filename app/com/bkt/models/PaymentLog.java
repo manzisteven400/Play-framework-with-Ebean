@@ -58,6 +58,10 @@ public class PaymentLog extends Model {
 	public PaymentPurpose paymentPurpose;
 	
 	@ManyToOne
+	@JoinColumn(name = "sub_purpose_id", referencedColumnName = "id")
+	public SubPaymentPurpose subPaymentPurpose;
+	
+	@ManyToOne
 	@JoinColumn(name = "institution_calender_id", referencedColumnName = "id")
 	public InstitutionCalender academicYear;
 	

@@ -675,7 +675,6 @@ public class PaymentLogController extends Controller {
 		
 		
 		// Paging starts
-
 		Page<PaymentLog> pagedList = PaymentLog
 				.find.where()
 				.eq("is_registered","yes")
@@ -689,7 +688,6 @@ public class PaymentLogController extends Controller {
 
 		// get the total row count (from the future)
 		int totalRowCount = pagedList.getTotalRowCount();
-		
 		
 		if (allPayents.isEmpty()) {
 			ObjectNode pymtLongJson = Json.newObject();

@@ -3,11 +3,11 @@ package com.bkt.controllers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.bkt.models.Institution;
 import com.bkt.models.InstitutionCalender;
 import com.bkt.models.PaymentLog;
 import com.bkt.models.PaymentPurpose;
 import com.bkt.models.Student;
+import com.bkt.models.SubPaymentPurpose;
 import com.bkt.models.USSDTempLog;
 import com.bkt.utils.ProcessUssdResp;
 import com.bkt.utils.SMSAPI;
@@ -24,9 +24,9 @@ import play.mvc.Result;
 
 public class USSDHandler extends Controller {
 	private static final String OUTER_WELCOME = "Welcome to University portal for Urubuto:#1)Eng #2)Kiny";
-	public static final String SCHOOL_SERVICES_KINY = "Hitamo Serivici: #1)Kwishyura ayo gusaba kwiga";
+	public static final String SCHOOL_SERVICES_KINY = "Hitamo Kaminuza: #1)Univeristy of Rwanda(UR)";
 	//public static final String SCHOOL_SERVICES_KINY = "Hitamo Serivici: #1)Minerivari#2)Amanota#3)Amatangazo#4)Tanga ubutumwa";
-	public static final String SCHOOL_SERVICES = "Select Service: #1)Application fees";
+	public static final String SCHOOL_SERVICES = "Select University: #1)University of Rwanda(UR)";
 	//public static final String SCHOOL_SERVICES = "Select Service: #1)School fees#2)Marks Results#3)School Announcements#4)Leave Message";
 	public static final String BACK_MENU_SCHOOL = "#00)Home#000)Exit";
 	public static final String BACK_MENU_KINY_SCHOOL = "#00)Ahabanza#000)Gusohoka";
@@ -336,7 +336,7 @@ public class USSDHandler extends Controller {
 									if (myStudent.id > 0) {
 
 										String removeFirstBraces = USSDHelperUtils
-												.getInstitutionsPaymentPurposesSorted(myStudent.instId.id).toString()
+												.getInstitutionsPaymentPurposesSorted(myStudent).toString()
 												.replace("{", "");
 										String removeLastBraces = removeFirstBraces.replaceAll("}", "");
 										String removeWhiteSpace = removeLastBraces.trim();
@@ -344,12 +344,12 @@ public class USSDHandler extends Controller {
 										String institutionList = removeWhiteSpace;
 										if (myLog.language.equals("ENG")) {
 
-											myResponse = "Select college:#"
+											myResponse = "Select payment purpose:#"
 													+ removeWhiteSpace.replaceAll(",", "#").replaceAll("=", ")");
 
 										} else {
 
-											myResponse = "Hitamo ikigo:#"
+											myResponse = "Hitamo icyo wishyura:#"
 													+ removeWhiteSpace.replaceAll(",", "#").replaceAll("=", ")");
 
 										}
@@ -386,7 +386,7 @@ public class USSDHandler extends Controller {
 
 								}
 
-							} else {
+							} else {/*
 
 								Institution inst;
 								int selectedInst = 0;
@@ -448,7 +448,7 @@ public class USSDHandler extends Controller {
 
 								}
 
-							}
+							*/}
 						}
 
 					}
@@ -464,7 +464,9 @@ public class USSDHandler extends Controller {
 						if (secondChoice == 1) {
 							if (regStatus == 1) {
 
-								try {
+								if(myLog.fifthMenu==1){
+									
+									// get selected sub payment purpose
 
 									int selectedId = 0;
 									try {
@@ -474,7 +476,7 @@ public class USSDHandler extends Controller {
 										e.printStackTrace();
 									}
 									
-									PaymentPurpose paymentPurpose = USSDHelperUtils.getPaymentPurposeSelected(myLog.student.instId.id, selectedId);
+									SubPaymentPurpose paymentPurpose = USSDHelperUtils.getSubPaymentPurposeSelected(myLog.paymentPurpose, selectedId);
 									
 									if (paymentPurpose.id > 0) {
 
@@ -487,9 +489,9 @@ public class USSDHandler extends Controller {
 											myResponse = "Andika Amafaraga ushaka kwishyura";
 
 										}
-										myLog.paymentPurpose = paymentPurpose;
 										myLog.level = 7;
-
+										myLog.subPaymentPurpose = paymentPurpose;
+										
 									} else {
 
 										if (myLog.language.equals("ENG")) {
@@ -502,19 +504,96 @@ public class USSDHandler extends Controller {
 
 									}
 
-								} catch (Exception e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
+								
+								}else{
+									try {
 
-									if (myLog.language.equals("ENG")) {
-										myResponse = "You selected wrong purpose. Try again." + EXIT_MESSAGE_SCHOOL;
-									} else {
-										myResponse = "Muhisemo impanvu itanditse.Mwongere mugerageze."
-												+ EXIT_MESSAGE_KINY_SCHOOL;
+										int selectedId = 0;
+										try {
+											selectedId = Integer.parseInt(userMessage);
+										} catch (Exception e) {
+											// TODO Auto-generated catch block
+											e.printStackTrace();
+										}
+										
+										PaymentPurpose paymentPurpose = USSDHelperUtils.getPaymentPurposeSelected(myLog.student, selectedId);
+										
+										if (paymentPurpose.id > 0) {
+											Integer hasDepents = 0;
+											
+											try {
+												hasDepents = paymentPurpose.hasDependent;
+												LOG.info("has dependents...."+hasDepents);
+											} catch (Exception e) {
+												// TODO Auto-generated catch block
+												//e.printStackTrace();
+												LOG.info("has dependents...."+000000);
+											}
+											if(null !=hasDepents && hasDepents==1){
+
+												String removeFirstBraces = USSDHelperUtils
+														.getSubPaymentPurposesSorted(paymentPurpose).toString()
+														.replace("{", "");
+												String removeLastBraces = removeFirstBraces.replaceAll("}", "");
+												String removeWhiteSpace = removeLastBraces.trim();
+
+												if (myLog.language.equals("ENG")) {
+
+													myResponse = "Select payment purpose:#"
+															+ removeWhiteSpace.replaceAll(",", "#").replaceAll("=", ")");
+
+												} else {
+
+													myResponse = "Hitamo icyo wishyura:#"
+															+ removeWhiteSpace.replaceAll(",", "#").replaceAll("=", ")");
+
+												}
+												
+												myLog.level = 6;
+												myLog.fifthMenu=1;
+											
+											}else{
+												if (myLog.language.equals("ENG")) {
+
+													myResponse = "Enter amount to pay";
+
+												} else {
+
+													myResponse = "Andika Amafaraga ushaka kwishyura";
+
+												}
+												myLog.level = 7;
+											}
+											myLog.paymentPurpose = paymentPurpose;
+											
+
+										} else {
+
+											if (myLog.language.equals("ENG")) {
+												myResponse = "You selected wrong purpose. Try again." + EXIT_MESSAGE_SCHOOL;
+											} else {
+												myResponse = "Muhisemo impanvu itanditse.Mwongere mugerageze."
+														+ EXIT_MESSAGE_KINY_SCHOOL;
+											}
+											action = "FB";
+
+										}
+
+									} catch (Exception e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+
+										if (myLog.language.equals("ENG")) {
+											myResponse = "You selected wrong purpose. Try again." + EXIT_MESSAGE_SCHOOL;
+										} else {
+											myResponse = "Muhisemo impanvu itanditse.Mwongere mugerageze."
+													+ EXIT_MESSAGE_KINY_SCHOOL;
+										}
+										action = "FB";
+
 									}
-									action = "FB";
-
 								}
+								
 
 							} else {
 
@@ -528,7 +607,7 @@ public class USSDHandler extends Controller {
 										e.printStackTrace();
 									}
 									
-									PaymentPurpose paymentPurpose = USSDHelperUtils.getPaymentPurposeSelected(myLog.institution.id, selectedId);
+									PaymentPurpose paymentPurpose = USSDHelperUtils.getPaymentPurposeSelected(myLog.student, selectedId);
 									
 									if (paymentPurpose.id > 0) {
 
@@ -717,7 +796,8 @@ public class USSDHandler extends Controller {
 
 										PaymentLog myFeesLog=new PaymentLog();
 										try {
-											//TESTUNIV
+											//UNIV
+											//UNIV
 											String transactionId = "UNIV" + USSDHelperUtils.getDateNowString() + USSDHelperUtils.randomToken();
 										
 											String trxId = transactionId;
@@ -740,13 +820,18 @@ public class USSDHandler extends Controller {
 											myFeesLog.bankAcc=myLog.paymentPurpose.accountId;
 											myFeesLog.paymentChannel="MTN mobile money channel";
 											myFeesLog.paymentDevice=msisdn;
+											
 											myFeesLog.amountPaid=myLog.amount;
 											myFeesLog.payerName=msisdn;
 											myFeesLog.msisdn=msisdn;
 											myFeesLog.isRegistered="yes";
 											myFeesLog.instId=myLog.student.instId;
 											myFeesLog.studentId=myLog.student;
+											//myFeesLog.studentRef = myLog.student.regNumber;
 											myFeesLog.bank=myLog.paymentPurpose.accountId.bankId;
+											if(myLog.fifthMenu==1 && myLog.subPaymentPurpose!=null ){
+												myFeesLog.subPaymentPurpose=myLog.subPaymentPurpose;
+											}
 											myFeesLog.paymentPurpose=myLog.paymentPurpose;
 											myFeesLog.processingNumber=trxId;
 											myFeesLog.operator="MTN";
@@ -948,7 +1033,7 @@ public class USSDHandler extends Controller {
 
 										PaymentLog myFeesLog=new PaymentLog();
 										try {
-											//TESTUNIV
+											//UNIV
 											String transactionId = "UNIV" + USSDHelperUtils.getDateNowString() + USSDHelperUtils.randomToken();
 										
 											String trxId = transactionId;
@@ -961,6 +1046,7 @@ public class USSDHandler extends Controller {
 												// TODO Auto-generated catch block
 												e1.printStackTrace();
 											}
+										
 											System.out.println("response from urubuto momo:::" + respFromMtekana);
 											ProcessUssdResp ussdRespTemp = new ProcessUssdResp(respFromMtekana);
 
@@ -1364,11 +1450,6 @@ public class USSDHandler extends Controller {
 			
 		} else {
 			
-
-			myFeesLog.statusDesc="Failed";
-			myFeesLog.ussdStatus="Failed";
-			myFeesLog.update();
-			
 		}
 		return ok("Success");
 	
@@ -1419,6 +1500,4 @@ public class USSDHandler extends Controller {
 
 		return responseBuffer.toString();
 	}
-
-
 }

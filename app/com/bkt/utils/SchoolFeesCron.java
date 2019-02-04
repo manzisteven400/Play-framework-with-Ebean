@@ -82,7 +82,7 @@ public class SchoolFeesCron {
 	}@SuppressWarnings("deprecation")
 	public static void postSchoolFeesTransactions(){
 		//get all transactions pending
-		LOG.info("Univerisity...Cron checking TEST .............................bank ....postSchoolFeesTransactions");
+		LOG.info("Univerisity...Cron checking .............................bank ....postSchoolFeesTransactions");
 		
 		for(PaymentLog myFeesLog:PaymentLog.find.where().eq("ussd_status", "success").eq("status_desc", "Success at MTN and Pending at Bank").findList()){
 			String logBankAcc="";

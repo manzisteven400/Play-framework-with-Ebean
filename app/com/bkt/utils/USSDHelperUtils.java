@@ -9,6 +9,7 @@ import java.security.cert.CertificateException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -30,6 +31,8 @@ import com.bkt.models.CheckSumLog;
 import com.bkt.models.Institution;
 import com.bkt.models.PaymentLog;
 import com.bkt.models.PaymentPurpose;
+import com.bkt.models.Student;
+import com.bkt.models.SubPaymentPurpose;
 import com.bkt.models.Topic;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -150,26 +153,197 @@ public class USSDHelperUtils {
 		return institution;
 	}
 
-	public static Map<Integer, String> getInstitutionsPaymentPurposesSorted(Long instId) {
+	public static Map<Integer, String> getInstitutionsPaymentPurposesSorted(Student student) {
 		Map<Integer, String> map = new HashMap<Integer, String>();
 		int count = 0;
-		for (PaymentPurpose inst : PaymentPurpose.find.where().eq("institution_id", instId).findList()) {
-			
-			String accNumber=inst.accountId.accountNumber;
-			if(accNumber.length()==17 ){
-				count++;
-				//map.put(count, inst.purpose);
-				map.put(count, inst.purpose+"("+inst.accountId.accountNumber+")");
-			}
-			
+		Long facultId = null;
+		try {
+			facultId = student.facultyId.id;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+		if(null != facultId && !(facultId==29) && !(facultId==0) && !(facultId==29) && !(facultId==0)){
+			for (PaymentPurpose inst : PaymentPurpose.find.where().eq("faculty_id", facultId).findList()) {
+				
+				String accNumber=inst.accountId.accountNumber;
+				if(accNumber.length()==17 ){
+					count++;
+					//map.put(count, inst.purpose);
+					map.put(count, inst.purpose+"("+inst.accountId.accountNumber+")");
+				}
+				
+			}
+		}else{
+			Long instId = null;
+			try {
+				instId = student.instId.id;
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			if(null != instId){
+
+				for (PaymentPurpose inst : PaymentPurpose.find.where().eq("institution_id", instId).isNull("faculty_id").findList()) {
+					
+					String accNumber=inst.accountId.accountNumber;
+					if(accNumber.length()==17 ){
+						count++;
+						//map.put(count, inst.purpose);
+						map.put(count, inst.purpose+"("+inst.accountId.accountNumber+")");
+					}
+					
+				}
+			
+			}
+		}
+		
+		if(count==0){
+			map.put(0, "No valid purpose found/Nta makuru y'ibyishyurwa ahari");
+		}
+		return map;
+	}public static List<PaymentPurpose> getInstitutionsPaymentPurposes(Student student) {
+		List<PaymentPurpose> paymentList = new ArrayList<PaymentPurpose>();
+		
+		Long facultId = null;
+		try {
+			facultId = student.facultyId.id;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if(null != facultId && !(facultId==29) && !(facultId==0)){
+			for (PaymentPurpose inst : PaymentPurpose.find.where().eq("faculty_id", facultId).findList()) {
+				
+				String accNumber=inst.accountId.accountNumber;
+				if(accNumber.length()==17 ){
+					
+					//map.put(count, inst.purpose);
+					paymentList.add(inst);
+				}
+				
+			}
+		}else{
+			Long instId = null;
+			try {
+				instId = student.instId.id;
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			if(null != instId){
+
+				for (PaymentPurpose inst : PaymentPurpose.find.where().eq("institution_id", instId).isNull("faculty_id").findList()) {
+					
+					String accNumber=inst.accountId.accountNumber;
+					if(accNumber.length()==17 ){
+						
+						paymentList.add(inst);
+					}
+					
+				}
+			
+			}
+		}
+		
+		return paymentList;
+	}
+	public static PaymentPurpose getPaymentPurposeSelected(Student student, int selectedId) {
+		PaymentPurpose institution = new PaymentPurpose();
+		int count = 0;
+		Long facultId = null;
+		try {
+			facultId = student.facultyId.id;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
+		}
+		if(null != facultId && !(facultId==29) && !(facultId==0)){
+			for (PaymentPurpose inst : PaymentPurpose.find.where().eq("faculty_id", facultId).findList()) {
+				
+				count++;
+				if (selectedId == count) {
+					institution = inst;
+				}
+				
+			}
+		}else{
+			Long instId = null;
+			try {
+				instId = student.instId.id;
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			if(null != instId){
+				
+				for (PaymentPurpose inst : PaymentPurpose.find.where().eq("institution_id", instId).isNull("faculty_id").findList()) {
+					
+					count++;
+					if (selectedId == count) {
+						LOG.info("instId...."+instId);
+						institution = inst;
+					}
+					
+				}
+			
+			}
+		}
+		
+		return institution;
+	}public static Map<Integer, String> getSubPaymentPurposesSorted(PaymentPurpose student) {
+		Map<Integer, String> map = new HashMap<Integer, String>();
+		int count = 0;
+		Long facultId = null;
+		try {
+			facultId = student.id;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if(null != facultId){
+			
+			for (SubPaymentPurpose inst : SubPaymentPurpose.find.where().eq("payment_purpose", facultId).findList()) {
+				
+				String accNumber=inst.accountId.accountNumber;
+				if(accNumber.length()==17 ){
+					count++;
+					//map.put(count, inst.purpose);
+					map.put(count, inst.purpose+"("+inst.accountId.accountNumber+")");
+				}
+				
+			}
+		}
+		
 		if(count==0){
 			map.put(0, "No valid purpose found/Nta makuru y'ibyishyurwa ahari");
 		}
 		return map;
 	}
-
-	public static PaymentPurpose getPaymentPurposeSelected(Long instId, int selectedId) {
+	public static SubPaymentPurpose getSubPaymentPurposeSelected(PaymentPurpose student, int selectedId) {
+		SubPaymentPurpose institution = new SubPaymentPurpose();
+		int count = 0;
+		Long facultId = null;
+		try {
+			facultId = student.id;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if(null != facultId){
+			for (SubPaymentPurpose inst : SubPaymentPurpose.find.where().eq("payment_purpose", facultId).findList()) {
+				
+				count++;
+				if (selectedId == count) {
+					institution = inst;
+				}
+				
+			}
+		}
+		
+		return institution;
+	}
+	/*public static PaymentPurpose getPaymentPurposeSelected2(Student student, int selectedId) {
 
 		PaymentPurpose institution = new PaymentPurpose();
 		int count = 0;
@@ -182,7 +356,7 @@ public class USSDHelperUtils {
 
 		}
 		return institution;
-	}public static String getCheckSum() {
+	}*/public static String getCheckSum() {
 
 		String checkSumStr=generateCheckSum();
 		CheckSumLog checkSum = CheckSumLog.find.where()
@@ -415,7 +589,7 @@ public class USSDHelperUtils {
 		String line = "";
 
 		String beginPoint = "https://172.16.20.45:8443/schoolfees/bk/techouse/rest/payment/university/from/momo-rwanda";
-		//String beginPoint = "https://10.102.148.201:8443/schoolfees/bk/techouse/rest/payment/university/from/momo-rwanda";
+		//String beginPoint = "https://10.102.148.201:8443/schoolfees/bk/techouse/rest/payment/university/from/momo-rwanda";//test
 
 		try {
 			// URL url = new URL("https://hostname/index.html");

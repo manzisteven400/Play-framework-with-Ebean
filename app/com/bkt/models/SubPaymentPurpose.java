@@ -56,7 +56,7 @@ public class SubPaymentPurpose extends Model {
 	public String accPriority;
 	
 	@ManyToOne
-	@JoinColumn(name = "payment_purpose_id", referencedColumnName = "id")
+	@JoinColumn(name = "payment_purpose", referencedColumnName = "id")
 	public PaymentPurpose paymentPurpose;
 	
 	public Integer hasDependent;

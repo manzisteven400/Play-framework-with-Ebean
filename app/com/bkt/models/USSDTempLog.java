@@ -199,6 +199,10 @@ public class USSDTempLog extends Model {
 	public UserProfile userProfile;
 	
 	@ManyToOne
+	@JoinColumn(name = "sub_purpose_id", referencedColumnName = "id")
+	public SubPaymentPurpose subPaymentPurpose;
+	
+	@ManyToOne
 	@JoinColumn(name = "topic_id", referencedColumnName = "id")
 	public Topic topic;
 	
