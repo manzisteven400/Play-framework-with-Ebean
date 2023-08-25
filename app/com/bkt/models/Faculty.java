@@ -71,4 +71,14 @@ public class Faculty extends Model {
 
 	public static Finder<Long, Faculty> find = new Finder<Long, Faculty>(Long.class, Faculty.class);
 
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+	
+	
+
 }

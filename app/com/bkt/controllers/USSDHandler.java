@@ -24,9 +24,9 @@ import play.mvc.Result;
 
 public class USSDHandler extends Controller {
 	private static final String OUTER_WELCOME = "Welcome to University portal for Urubuto:#1)Eng #2)Kiny";
-	public static final String SCHOOL_SERVICES_KINY = "Hitamo Kaminuza: #1)Univeristy of Rwanda(UR)";
+	public static final String SCHOOL_SERVICES_KINY = "Hitamo Kaminuza: #1)Univeristy of Rwanda(UR) #2)Kigali Independent University #3)University of Kigali #4)IPRC KIGALI #5)INES-Ruhengeri #6)University of Tourism T&B(UTB)";
 	//public static final String SCHOOL_SERVICES_KINY = "Hitamo Serivici: #1)Minerivari#2)Amanota#3)Amatangazo#4)Tanga ubutumwa";
-	public static final String SCHOOL_SERVICES = "Select University: #1)University of Rwanda(UR)";
+	public static final String SCHOOL_SERVICES = "Select University: #1)University of Rwanda(UR)  #2)Kigali Independent University  #3)University of Kigali #4)IPRC KIGALI #5)INES-Ruhengeri #6)University of Tourism T&B(UTB)";
 	//public static final String SCHOOL_SERVICES = "Select Service: #1)School fees#2)Marks Results#3)School Announcements#4)Leave Message";
 	public static final String BACK_MENU_SCHOOL = "#00)Home#000)Exit";
 	public static final String BACK_MENU_KINY_SCHOOL = "#00)Ahabanza#000)Gusohoka";
@@ -144,7 +144,7 @@ public class USSDHandler extends Controller {
 					int userChoice = Integer.parseInt(userMessage);
 					String language = myLog.language;
 
-					if (userChoice == 1) {
+					if (userChoice == 1 || userChoice == 2 || userChoice == 3 || userChoice == 4 || userChoice == 5 || userChoice ==6) {
 
 						if (language.equals("ENG")) {
 
@@ -154,34 +154,11 @@ public class USSDHandler extends Controller {
 							myResponse = "Hitamo serivisi:#1)Kwishyura,#2)Kureba ideni,#3)Uko wishyuye.";
 						}
 
-						myLog.menuFirst = 1;
+						myLog.menuFirst = userChoice;
 						myLog.level = 3;
 
-					} else if (userChoice == 2) {
-
-						if (language.equals("ENG")) {
-
-							myResponse = "This service is still in implementation process." + EXIT_MESSAGE_SCHOOL;
-
-						} else {
-							myResponse = "Iyi serivisi iracyanozwa izabageraho vuba." + EXIT_MESSAGE_KINY_SCHOOL;
-						}
-
-						action = "FB";
-
-					} else if (userChoice == 3) {
-
-						if (language.equals("ENG")) {
-
-							myResponse = "This service is still in implementation process." + EXIT_MESSAGE_SCHOOL;
-
-						} else {
-							myResponse = "Iyi serivisi iracyanozwa izabageraho vuba." + EXIT_MESSAGE_KINY_SCHOOL;
-						}
-
-						action = "FB";
-
-					} else {
+					}  
+					else {
 
 						if (language.equals("ENG")) {
 
@@ -203,13 +180,22 @@ public class USSDHandler extends Controller {
 					int secondChoice = Integer.parseInt(userMessage);
 					String language = myLog.language;
 
-					if (userChoice == 1) {
+					if (userChoice == 1 || userChoice == 2 || userChoice == 3 || userChoice == 4 || userChoice == 5 || userChoice == 6 ) {
 						if (secondChoice == 1) {
 
 							if (language.equals("ENG")) {
-								myResponse = "Choose registration status:#1)Have registration Number,#2)No registration number yet.";
+								
+								
+							  myResponse = "Choose payment option:#1)Have registration/reference Number,#2)No registration/reference number yet.";
+									
+								
+								
 							} else {
-								myResponse = "Ufite Nomero ikurangwa kw'ishuli:#1)Yego,#2)Oya ntabwo ndiyandikisha.";
+								
+								
+								 myResponse = "Ufite Nomero ikurangwa kw'ishuli cyangwa numero ya invoice:#1)Yego,#2)Oya ntabwo ndiyandikisha.";
+								
+								
 							}
 
 							myLog.secondMenu = 1;
@@ -265,14 +251,24 @@ public class USSDHandler extends Controller {
 					int regStatus = Integer.parseInt(userMessage);
 					String language = myLog.language;
 
-					if (userChoice == 1) {
+					if (userChoice == 1 || userChoice == 2 || userChoice == 3 || userChoice == 4 || userChoice == 5 || userChoice ==6) {
 						if (secondChoice == 1) {
 							if (regStatus == 1) {
 
 								if (language.equals("ENG")) {
-									myResponse = "Enter your Registration/Admission Number";
+									
+									
+									myResponse = "Enter Registration/reference Number";
+									
+									
+									
 								} else {
-									myResponse = "Andika nomero ikuranga kw'ishuli.";
+									
+								
+									
+									myResponse = "Andika nomero ikuranga kw'ishuli cyangwa numero ya invoice.";
+									
+									
 								}
 
 								myLog.thirdMenu = 1;
@@ -305,11 +301,11 @@ public class USSDHandler extends Controller {
 							
 								if (myLog.language.equals("ENG")) {
 
-									myResponse = "Service is not available for UR now. Check again later";
+									myResponse = "Service is not available now. Check again later";
 
 								} else {
 
-									myResponse = "Iyi serivisi ntabwo ihari muri UR. Murakoze";
+									myResponse = "Iyi serivisi ntabwo ihari. Murakoze";
 
 								}
 								action="FB";
@@ -325,7 +321,7 @@ public class USSDHandler extends Controller {
 					int secondChoice = myLog.secondMenu;
 					int regStatus = myLog.thirdMenu;
 
-					if (userChoice == 1) {
+					if (userChoice == 1 || userChoice == 2 || userChoice == 3 || userChoice == 4 || userChoice == 5 || userChoice ==6) {
 						if (secondChoice == 1) {
 							if (regStatus == 1) {
 
@@ -460,7 +456,7 @@ public class USSDHandler extends Controller {
 					int secondChoice = myLog.secondMenu;
 					int regStatus = myLog.thirdMenu;
 
-					if (userChoice == 1) {
+					if (userChoice == 1 || userChoice == 2 || userChoice == 3 || userChoice == 4 || userChoice == 5 || userChoice==6) {
 						if (secondChoice == 1) {
 							if (regStatus == 1) {
 
@@ -663,7 +659,7 @@ public class USSDHandler extends Controller {
 					int secondChoice = myLog.secondMenu;
 					int regStatus = myLog.thirdMenu;
 
-					if (userChoice == 1) {
+					if (userChoice == 1 || userChoice == 2 || userChoice == 3 || userChoice == 4 || userChoice == 5 || userChoice ==6) {
 						if (secondChoice == 1) {
 							if (regStatus == 1) {
 
@@ -674,22 +670,28 @@ public class USSDHandler extends Controller {
 									if (amount >= 100) {
 
 										if (myLog.language.equals("ENG")) {
-
+											
 											myResponse = myLog.student.firstName + " " + myLog.student.lastName
-													+ " with RegNo:" + myLog.student.regNumber
-													+ " are you sure you want to pay "
-													+ myLog.student.instId.name.toUpperCase() + " amount:" + amount
-													+ " for " + myLog.paymentPurpose.purpose + "?#1)Yes#2)No";
+														+ " with RegNo/RefNo:" + myLog.student.regNumber
+														+ " are you sure you want to pay "
+														+ myLog.student.instId.name.toUpperCase() + " amount:" + amount
+														+ " for " + myLog.paymentPurpose.purpose + "?#1)Yes#2)No";
 
-										} else {
+											
+											
+                                        } else {
+                                        	
+                                        	
+                                        	
+                                      myResponse = myLog.student.firstName + " " + myLog.student.lastName
+    													+ " ufite RegNo/RefNo:" + myLog.student.regNumber + " urashaka kwisyhura "
+    													+ myLog.student.instId.name.toUpperCase()
+    													+ ", amafaranga:" + amount + ", Impamvu:"
+    													+ myLog.paymentPurpose.purpose + "?#1)Yego#2)Oya";
 
-											myResponse = myLog.student.firstName + " " + myLog.student.lastName
-													+ " ufite RegNo:" + myLog.student.regNumber + " wiga "
-													+ myLog.student.instId.name.toUpperCase()
-													+ ", urashaka kwishyura amafaranga:" + amount + ", Impamvu:"
-													+ myLog.paymentPurpose.purpose + "?#1)Yego#2)Oya";
-
-										}
+    										
+                                        	
+                                        }
 										myLog.amount = amount;
 										myLog.level = 8;
 
@@ -785,7 +787,7 @@ public class USSDHandler extends Controller {
 					int secondChoice = myLog.secondMenu;
 					int regStatus = myLog.thirdMenu;
 
-					if (userChoice == 1) {
+					if (userChoice == 1 || userChoice == 2 || userChoice == 3 || userChoice == 4 || userChoice == 5 || userChoice==6) {
 						if (secondChoice == 1) {
 							if (regStatus == 1) {
 								try {
@@ -817,7 +819,15 @@ public class USSDHandler extends Controller {
 											String statusDes = ussdRespTemp.getStatusDesc();
 											//String ProcessingNumber = ussdRespTemp.getProcessingNumber();
 											
-											myFeesLog.bankAcc=myLog.paymentPurpose.accountId;
+											if(myLog.paymentPurpose.hasDependent == 0)
+											{
+												myFeesLog.bankAcc=myLog.paymentPurpose.accountId;
+											}
+											else
+											{
+												myFeesLog.bankAcc=myLog.subPaymentPurpose.accountId;
+											}
+											
 											myFeesLog.paymentChannel="MTN mobile money channel";
 											myFeesLog.paymentDevice=msisdn;
 											
@@ -982,7 +992,7 @@ public class USSDHandler extends Controller {
 					int secondChoice = myLog.secondMenu;
 					int regStatus = myLog.thirdMenu;
 
-					if (userChoice == 1) {
+					if (userChoice == 1 || userChoice == 2 || userChoice == 3 || userChoice == 4 || userChoice == 5 || userChoice ==6) {
 						if (secondChoice == 1) {
 							if (regStatus == 1) {
 
@@ -1014,12 +1024,12 @@ public class USSDHandler extends Controller {
 				
 				}else if(level==11){
 
-
+                    
 					int userChoice = myLog.menuFirst;
 					int secondChoice = myLog.secondMenu;
 					int regStatus = myLog.thirdMenu;
 
-					if (userChoice == 1) {
+					if (userChoice == 1 || userChoice == 2 || userChoice == 3 || userChoice == 4 || userChoice == 5 || userChoice==6) {
 						if (secondChoice == 1) {
 							if (regStatus == 1) {
 

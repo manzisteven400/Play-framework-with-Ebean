@@ -67,5 +67,17 @@ public class PaymentPurpose extends Model {
 	public List<USSDTempLog> ussdTempLog;
 	
 	public static Finder<Long, PaymentPurpose> find=new Finder<Long,PaymentPurpose>(Long.class, PaymentPurpose.class);
+
+	public Faculty getFacultyId() {
+		return facultyId;
+	}
+
+	public void setFacultyId(Faculty facultyId) {
+		this.facultyId = facultyId;
+	}
+
+	
+	
+	
 	
 }

@@ -79,7 +79,9 @@ public class SchoolFeesCron {
 		
 		}
 		
-	}@SuppressWarnings("deprecation")
+	}
+	
+	@SuppressWarnings("deprecation")
 	public static void postSchoolFeesTransactions(){
 		//get all transactions pending
 		LOG.info("Univerisity...Cron checking .............................bank ....postSchoolFeesTransactions");
@@ -288,7 +290,10 @@ public class SchoolFeesCron {
 		
 		}
 		
-	}public static JsonNode handleMomoTransactionStatus(String momoTrx) {
+	}
+	
+	
+	public static JsonNode handleMomoTransactionStatus(String momoTrx) {
 
         ObjectNode memberDetails = Json.newObject();
         

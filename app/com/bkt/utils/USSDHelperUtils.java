@@ -643,7 +643,7 @@ public class USSDHelperUtils {
 
 		String line = "";
 
-		String beginPoint = "http://localhost:8084/urfeeshandler/file.writing";
+		String beginPoint = "http://10.10.76.10:8084/urfeeshandler/file.writing";
 
 		try {
 			// URL url = new URL("https://hostname/index.html");

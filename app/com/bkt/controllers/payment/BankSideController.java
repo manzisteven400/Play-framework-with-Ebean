@@ -165,60 +165,73 @@ public class BankSideController extends Controller {
 								}
 							}
 						} else {
+							
+							// UR students with no college
 							for (BankAccount bankAcc : BankAccount.find.where().eq("institution_id", user.instId.id).findList()) {
 
 								if (bankAcc.id > 0) {
 
 									for (PaymentPurpose myPurpose : PaymentPurpose.find.where().eq("bank_account_id", bankAcc.id).findList()) {
-										// count++;
+										
+										try
+										{
+											if(myPurpose.facultyId.getId()!= null) continue;
+										}
+										catch(NullPointerException e)
+										{
 
-										if (myPurpose.hasDependent == 1) {
-											// int subCount=0;
-											// ObjectNode subpaymentJson;
-											// ArrayNode arraySubAccs =
-											// mapper.createArrayNode();
-											for (SubPaymentPurpose suPurpose : SubPaymentPurpose.find.where().eq("payment_purpose", myPurpose.id).findList()) {
+											// count++;
+											
+
+											if (myPurpose.hasDependent == 1) {
+												// int subCount=0;
+												// ObjectNode subpaymentJson;
+												// ArrayNode arraySubAccs =
+												// mapper.createArrayNode();
+												for (SubPaymentPurpose suPurpose : SubPaymentPurpose.find.where().eq("payment_purpose", myPurpose.id).findList()) {
+													count++;
+													// subpaymentJson =
+													// Json.newObject();
+													paymentPurposeJson = Json.newObject();
+													paymentPurposeJson.put("accountPurposeId", myPurpose.id);
+													paymentPurposeJson.put("accountPurpose", myPurpose.purpose);
+
+													paymentPurposeJson.put("subPurposeId", suPurpose.id);
+													paymentPurposeJson.put("subPurpose", suPurpose.purpose);
+													paymentPurposeJson.put("bankCode", suPurpose.accountId.bankId.bnrCode);
+													paymentPurposeJson.put("bankName", suPurpose.accountId.bankId.name);
+													paymentPurposeJson.put("countNo", count);
+													paymentPurposeJson.put("accountNumber", suPurpose.accountId.accountNumber);
+													paymentPurposeJson.put("bankAbrrev", suPurpose.accountId.bankId.accronym);
+													
+													arrayAccs.add(paymentPurposeJson);
+													
+													// arraySubAccs.add(subpaymentJson);
+												}
+												// add sub purposes to the json body
+												/*
+												 * if(!arraySubAccs.isNull()){
+												 * bankAccJson.put(
+												 * "subPaymentPurposes",
+												 * arraySubAccs); }
+												 */
+											} else {
 												count++;
-												// subpaymentJson =
-												// Json.newObject();
 												paymentPurposeJson = Json.newObject();
 												paymentPurposeJson.put("accountPurposeId", myPurpose.id);
 												paymentPurposeJson.put("accountPurpose", myPurpose.purpose);
 
-												paymentPurposeJson.put("subPurposeId", suPurpose.id);
-												paymentPurposeJson.put("subPurpose", suPurpose.purpose);
-												paymentPurposeJson.put("bankCode", suPurpose.accountId.bankId.bnrCode);
-												paymentPurposeJson.put("bankName", suPurpose.accountId.bankId.name);
+												paymentPurposeJson.put("bankCode", bankAcc.bankId.bnrCode);
+												paymentPurposeJson.put("bankName", bankAcc.bankId.name);
 												paymentPurposeJson.put("countNo", count);
-												paymentPurposeJson.put("accountNumber", suPurpose.accountId.accountNumber);
-												paymentPurposeJson.put("bankAbrrev", suPurpose.accountId.bankId.accronym);
-												
+												paymentPurposeJson.put("accountNumber", bankAcc.accountNumber);
+												paymentPurposeJson.put("bankAbrrev", bankAcc.bankId.accronym);
 												arrayAccs.add(paymentPurposeJson);
 												
-												// arraySubAccs.add(subpaymentJson);
 											}
-											// add sub purposes to the json body
-											/*
-											 * if(!arraySubAccs.isNull()){
-											 * bankAccJson.put(
-											 * "subPaymentPurposes",
-											 * arraySubAccs); }
-											 */
-										} else {
-											count++;
-											paymentPurposeJson = Json.newObject();
-											paymentPurposeJson.put("accountPurposeId", myPurpose.id);
-											paymentPurposeJson.put("accountPurpose", myPurpose.purpose);
-
-											paymentPurposeJson.put("bankCode", bankAcc.bankId.bnrCode);
-											paymentPurposeJson.put("bankName", bankAcc.bankId.name);
-											paymentPurposeJson.put("countNo", count);
-											paymentPurposeJson.put("accountNumber", bankAcc.accountNumber);
-											paymentPurposeJson.put("bankAbrrev", bankAcc.bankId.accronym);
-											arrayAccs.add(paymentPurposeJson);
-											
+											// myPurpsoe++;
+										
 										}
-										// myPurpsoe++;
 									}
 
 								}
@@ -518,11 +531,42 @@ public class BankSideController extends Controller {
 						}
 						
 						// check bank accounts
-						BankAccount myBankAcc = BankAccount.find.where().eq("account_number", bankaccount).findUnique();
+						BankAccount bankObj = null;
+						List<BankAccount> accountList = BankAccount.find.where().eq("account_number", bankaccount).findList();
+						if(accountList.size() == 1)
+						{
+							for(BankAccount myBankAcc : accountList)
+							{
+
+								bankObj = myBankAcc;
+							
+							}
+						}
+						else
+						{
+							for(BankAccount myBankAcc : accountList)
+							{
+
+                                if(myBankAcc.accountNumber.trim().equals(bankaccount) && myBankAcc.facultyId.id == facultId)
+                                {
+                                	bankObj = myBankAcc;
+                                	
+                                	break;
+                                }
+								
+								
+								
+							
+							
+							}
+						}
+						
+							
+						
 						long bankId = 0;
 						// boolean canceld=false;
 						try {
-							bankId = myBankAcc.id;
+							bankId = bankObj.id;
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -549,8 +593,12 @@ public class BankSideController extends Controller {
 									}
 								}
 								
-								myPayment.bank = myBankAcc.bankId;
-								myPayment.bankAcc = myBankAcc;
+								//myPayment.bank = myBankAcc.bankId;
+								//myPayment.bankAcc = myBankAcc;
+								
+								myPayment.bank = bankObj.bankId;
+								
+								myPayment.bankAcc = bankObj;
 
 								myPayment.extTrxId = transactionId;
 								myPayment.instId = myInst;
@@ -570,7 +618,7 @@ public class BankSideController extends Controller {
 
 								if (asJson.has("subPaymentPurposeId")) {
 
-									SubPaymentPurpose subPurpose = SubPaymentPurpose.find.where().eq("id", asJson.get("subPaymentPurposeId").longValue()).eq("bank_account_id", myBankAcc.id).findUnique();
+									SubPaymentPurpose subPurpose = SubPaymentPurpose.find.where().eq("id", asJson.get("subPaymentPurposeId").longValue()).eq("bank_account_id", bankObj.id).findUnique();
 									long subPurposeId = 0;
 									try {
 										subPurposeId = subPurpose.id;
@@ -591,7 +639,7 @@ public class BankSideController extends Controller {
 									}
 								} else {
 									// check payment purpose
-									PaymentPurpose myPurpose = PaymentPurpose.find.where().eq("id", paymentPurposeId).eq("bank_account_id", myBankAcc.id).findUnique();
+									PaymentPurpose myPurpose = PaymentPurpose.find.where().eq("id", paymentPurposeId).eq("bank_account_id", bankObj.id).findUnique();
 									long purposeId = 0;
 									try {
 										purposeId = myPurpose.id;
@@ -636,7 +684,7 @@ public class BankSideController extends Controller {
 								} else {
 									myPayment.batchCheckSum = checkSum;
 
-									myPayment.logBankAccount = myBankAcc.accountNumber;
+									myPayment.logBankAccount = bankObj.accountNumber;
 									myPayment.studentRef = myStudent.regNumber;
 									myPayment.logged = 0;
 
@@ -687,11 +735,14 @@ public class BankSideController extends Controller {
 									PaymentLog myPayment = new PaymentLog();
 
 									myPayment.amountPaid = amount;
-									myPayment.bank = myBankAcc.bankId;
-									myPayment.bankAcc = myBankAcc;
+									//myPayment.bank = myBankAcc.bankId;
+									//myPayment.bankAcc = myBankAcc;
+									
+									myPayment.bank = bankObj.bankId;
+									myPayment.bankAcc = bankObj;
 
 									if (asJson.has("subPaymentPurposeId")) {
-										SubPaymentPurpose subPurpose = SubPaymentPurpose.find.where().eq("id", asJson.get("subPaymentPurposeId").longValue()).eq("bank_account_id", myBankAcc.id).findUnique();
+										SubPaymentPurpose subPurpose = SubPaymentPurpose.find.where().eq("id", asJson.get("subPaymentPurposeId").longValue()).eq("bank_account_id", bankObj.id).findUnique();
 										long subPurposeId = 0;
 										try {
 											subPurposeId = subPurpose.id;
@@ -712,7 +763,7 @@ public class BankSideController extends Controller {
 										}
 									} else {
 										// check payment purpose
-										PaymentPurpose myPurpose = PaymentPurpose.find.where().eq("id", paymentPurposeId).eq("bank_account_id", myBankAcc.id).findUnique();
+										PaymentPurpose myPurpose = PaymentPurpose.find.where().eq("id", paymentPurposeId).eq("bank_account_id", bankObj.id).findUnique();
 										long purposeId = 0;
 										try {
 											purposeId = myPurpose.id;
@@ -764,7 +815,7 @@ public class BankSideController extends Controller {
 									}
 
 									myPayment.batchCheckSum = USSDHelperUtils.getSequenceNo();
-									myPayment.logBankAccount = myBankAcc.accountNumber;
+									myPayment.logBankAccount = bankObj.accountNumber;
 									myPayment.studentRef = myStudent.regNumber;
 									myPayment.logged = 0;
 
